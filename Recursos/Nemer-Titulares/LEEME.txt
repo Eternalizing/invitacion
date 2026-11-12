@@ -1,0 +1,44 @@
+NEMER TITULARES — BOLD, versión 1.000
+
+Fuente TrueType para títulos de categorías, inspirada en el estilo visual
+del logo facilitado y en el concepto «Sector automotriz».
+
+INSTALACIÓN EN WINDOWS
+1. Extrae este ZIP.
+2. Haz clic derecho en NemerTitulares-Bold.ttf y elige Instalar.
+   También puedes abrir el archivo y pulsar Instalar.
+3. Vuelve a abrir Illustrator o Photoshop si no aparece de inmediato.
+4. Busca «Nemer Titulares» en el menú de fuentes; estilo Bold.
+
+EN MAC
+Abre NemerTitulares-Bold.ttf e instala la fuente desde Catálogo Tipográfico.
+
+USO
+Es una fuente de mayúsculas para titulares; al escribir minúsculas también
+se muestran mayúsculas. Incluye tildes, Ñ, Ü, números y puntuación común.
+La A, la N y la R y sus formas acentuadas usan remates ornamentales.
+Usa Montserrat para textos de lectura y para una línea pequeña «SECTOR».
+Aplica color o degradado dorado desde Illustrator o Photoshop: la fuente
+contiene formas vectoriales, no el acabado dorado de la muestra.
+No es una reproducción exacta de cada letra de la imagen generada.
+
+BASE Y LICENCIA
+Es una adaptación de Cinzel Bold y Cinzel Decorative Bold, diseños de
+Natanael Gama / The Cinzel Project Authors, bajo SIL Open Font License 1.1.
+No es un alfabeto dibujado desde cero ni una tipografía oficial del grupo.
+Cambios: selección de capitales ornamentales A/N/R, mapeo de entrada a
+mayúsculas, identidad propia de familia y métricas verticales para remates.
+La fuente derivada se distribuye bajo la misma licencia OFL 1.1.
+Se adjuntan los avisos de autoría y las licencias originales.
+La licencia permite uso comercial en diseños; la fuente no puede venderse
+por sí sola. El nombre reservado Cinzel se conserva solo como atribución.
+
+FUENTES ORIGINALES
+https://github.com/google/fonts/tree/main/ofl/cinzel
+https://github.com/google/fonts/tree/main/ofl/cinzeldecorative
+
+CONTENIDO
+NemerTitulares-Bold.ttf — fuente para instalar.
+Vista-previa.png — muestra renderizada con la fuente real.
+OFL-Cinzel.txt y OFL-Cinzel-Decorative.txt — licencias y atribución.
+build_nemer.py — proceso reproducible (requiere fontTools y Pillow).

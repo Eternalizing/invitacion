@@ -1,0 +1,233 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Nemer Titulares';
+  src: url('/fonts/NemerTitulares-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  html.theme-light {
+    color-scheme: light;
+  }
+
+  html.theme-dark {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #080808;
+    color: #f5f2ea;
+    overflow-x: hidden;
+  }
+}
+
+/* Metallic Gold Text with Shimmer Animation */
+.gold-text-metallic {
+  background: linear-gradient(135deg, #f7d774 0%, #d4af37 25%, #fff5c0 50%, #b8860b 75%, #f7d774 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldShine 5s linear infinite;
+}
+
+@keyframes goldShine {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Shimmer Sweep effect for buttons */
+.btn-gold-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-gold-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(25deg);
+  animation: shimmerSweep 3.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes shimmerSweep {
+  0% { left: -60%; }
+  25% { left: 130%; }
+  100% { left: 130%; }
+}
+
+/* Subtle Golden Pulse for Wax Seal */
+@keyframes pulseGoldRing {
+  0% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.6);
+  }
+  70% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 20px rgba(212, 175, 55, 0);
+  }
+  100% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+  }
+}
+
+.animate-pulse-gold {
+  animation: pulseGoldRing 2.4s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Cinematic Studio Optical Starburst */
+.optical-starburst {
+  background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(254,240,138,0.9) 20%, rgba(212,175,55,0.6) 45%, transparent 70%);
+}
+
+@keyframes opticalRayRotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.animate-optical-rays {
+  animation: opticalRayRotate 25s linear infinite;
+}
+
+/* Expanding Golden Shockwave Ring */
+@keyframes ringBurst {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 1;
+    border-width: 3px;
+  }
+  60% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(4.5);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+.animate-ring-burst {
+  animation: ringBurst 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Floating Ambient Golden Dust */
+@keyframes floatParticle {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateY(-22px) translateX(12px);
+    opacity: 0.85;
+  }
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff9c4 15%, #ffd54f 55%, transparent 80%);
+  animation: floatParticle ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Infinite Continuous Marquee animations for background photos (Zero gaps, continuous loop) */
+@keyframes marqueeLeft {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes marqueeRight {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-marquee-left-fast {
+  animation: marqueeLeft 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right-fast {
+  animation: marqueeRight 40s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-left-mid {
+  animation: marqueeLeft 44s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right-mid {
+  animation: marqueeRight 48s linear infinite;
+  will-change: transform;
+}
+
+/* Gallery Infinite Continuous Marquees (Ultra-smooth, gentle pacing) */
+.animate-gallery-left-1 {
+  animation: marqueeLeft 46s linear infinite;
+  will-change: transform;
+}
+
+.animate-gallery-right-2 {
+  animation: marqueeRight 52s linear infinite;
+  will-change: transform;
+}
+
+.animate-gallery-left-3 {
+  animation: marqueeLeft 48s linear infinite;
+  will-change: transform;
+}
+
+@media (min-width: 640px) {
+  .animate-gallery-left-1 {
+    animation-duration: 56s;
+  }
+  .animate-gallery-right-2 {
+    animation-duration: 64s;
+  }
+  .animate-gallery-left-3 {
+    animation-duration: 58s;
+  }
+}
+
+/* Pause marquee when user hovers over a row or card */
+.hover-pause:hover .animate-gallery-left-1,
+.hover-pause:hover .animate-gallery-right-2,
+.hover-pause:hover .animate-gallery-left-3 {
+  animation-play-state: paused;
+}
+
+/* Smooth luxury scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #08080a;
+}
+::-webkit-scrollbar-thumb {
+  background: #c59522;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #e6be44;
+}
+
