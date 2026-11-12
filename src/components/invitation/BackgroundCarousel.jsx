@@ -18,8 +18,8 @@ export default function BackgroundCarousel() {
     : 'bg-[#151515] border border-[#51432A] shadow-2xl';
 
   const imgFilter = isLight
-    ? 'filter grayscale contrast-110 sepia-[0.15] brightness-95'
-    : 'filter grayscale contrast-115 brightness-90';
+    ? 'filter grayscale contrast-105 opacity-60'
+    : 'filter grayscale contrast-110 opacity-55';
 
   return (
     <div

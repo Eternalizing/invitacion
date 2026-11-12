@@ -140,19 +140,19 @@ function InvitationContent() {
           isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* Iluminación Ambiental */}
+        {/* Iluminación Ambiental Optimizada para Móviles */}
         <div
-          className={`absolute top-0 left-1/2 -translate-x-1/2 w-[650px] h-[450px] rounded-full blur-[150px] pointer-events-none transition-all duration-700 ${
+          className={`absolute top-0 left-1/2 -translate-x-1/2 w-[650px] h-[450px] rounded-full blur-[70px] sm:blur-[150px] pointer-events-none transition-all duration-700 ${
             isLight ? 'bg-[#DDB967]/15' : 'bg-[#C9A34E]/10'
           }`}
         />
         <div
-          className={`absolute top-1/4 right-0 w-80 h-80 rounded-full blur-[130px] pointer-events-none transition-all duration-700 ${
+          className={`absolute top-1/4 right-0 w-80 h-80 rounded-full blur-[60px] sm:blur-[130px] pointer-events-none transition-all duration-700 ${
             isLight ? 'bg-[#DDB967]/10' : 'bg-[#C9A34E]/8'
           }`}
         />
         <div
-          className={`absolute top-1/2 -left-20 w-96 h-96 rounded-full blur-[140px] pointer-events-none transition-all duration-700 ${
+          className={`absolute top-1/2 -left-20 w-96 h-96 rounded-full blur-[65px] sm:blur-[140px] pointer-events-none transition-all duration-700 ${
             isLight ? 'bg-[#706044]/25' : 'bg-[#51432A]/20'
           }`}
         />

@@ -54,12 +54,24 @@ function GalleryRow({ items, direction = 'left', speed = 0.65, cardContainerClas
 
     window.addEventListener('mouseup', handleGlobalMouseUp);
 
+    // Solo animar si la fila está actualmente visible en pantalla (ahorro masivo de CPU y memoria en móvil)
+    let isVisible = false;
+    const intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isVisible = entry.isIntersecting;
+        });
+      },
+      { rootMargin: '120px 0px' }
+    );
+    intersectionObserver.observe(el);
+
     // Bucle de auto-desplazamiento continuo cuando está listo y el usuario no está arrastrando
     let animationFrameId;
     const step = direction === 'left' ? speed : -speed;
 
     const animate = () => {
-      if (el && isReady && !isInteractingRef.current && !isHoveredRef.current && singleWidthRef.current > 0) {
+      if (isVisible && el && isReady && !isInteractingRef.current && !isHoveredRef.current && singleWidthRef.current > 0) {
         el.scrollLeft += step;
         const single = singleWidthRef.current;
         if (el.scrollLeft >= single * 2.2) {
@@ -77,6 +89,7 @@ function GalleryRow({ items, direction = 'left', speed = 0.65, cardContainerClas
 
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      intersectionObserver.disconnect();
       resizeObserver.disconnect();
       window.removeEventListener('mouseup', handleGlobalMouseUp);
       if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
@@ -220,7 +233,10 @@ export default function PhotoGallery({ isReady = true }) {
     : 'bg-[#151515]/90 text-[#C9A34E] border-[#51432A]';
 
   return (
-    <section className="w-full max-w-full my-12 sm:my-16 flex flex-col items-center z-10 relative overflow-hidden">
+    <section
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '0 800px' }}
+      className="w-full max-w-full my-12 sm:my-16 flex flex-col items-center z-10 relative overflow-hidden"
+    >
       {/* =========================================================================
           1. PRIMERA GALERÍA: 50 AÑOS DE HISTORIA (27 Fotos oficiales)
          ========================================================================= */}

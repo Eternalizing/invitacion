@@ -18,6 +18,7 @@ export default function BookSection() {
 
   return (
     <section
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '0 320px' }}
       className={`w-full my-8 relative overflow-hidden rounded-3xl group z-10 transition-all duration-500 ${
         isLight
           ? 'border border-[#706044] bg-[#33312C] shadow-[0_20px_50px_rgba(0,0,0,0.7)]'
@@ -26,7 +27,7 @@ export default function BookSection() {
     >
       {/* 1. LUZ AMBIENTAL */}
       <div
-        className={`absolute top-1/2 left-[35%] -translate-x-1/2 -translate-y-1/2 w-64 sm:w-80 h-64 sm:h-80 rounded-full blur-[80px] pointer-events-none group-hover:scale-110 transition-transform duration-1000 ${
+        className={`absolute top-1/2 left-[35%] -translate-x-1/2 -translate-y-1/2 w-64 sm:w-80 h-64 sm:h-80 rounded-full blur-[40px] sm:blur-[80px] pointer-events-none group-hover:scale-110 transition-transform duration-1000 ${
           isLight
             ? 'bg-gradient-to-tr from-[#DDB967]/25 via-amber-300/15 to-transparent'
             : 'bg-gradient-to-tr from-[#C9A34E]/25 via-yellow-400/20 to-transparent'
@@ -60,6 +61,8 @@ export default function BookSection() {
         <img
           src="/assets/libro-50anos.jpg"
           alt="Libro Conmemorativo 50 Años"
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover object-center transition-transform duration-1000 group-hover:scale-[1.02]"
         />
 

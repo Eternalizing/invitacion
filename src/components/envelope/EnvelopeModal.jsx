@@ -1,132 +1,59 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { eventData } from '../../data/eventData';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function EnvelopeModal({ guestName, onOpen, onOpenStart, onOpenComplete }) {
   const { isLight } = useTheme();
 
-  // Secuencia:
+  // Secuencia elegante de revelación de logos:
   // 'idle' -> 'blurring-envelope' -> 'showing-logo-nemer' -> 'showing-logo-50' -> 'transition-out'
   const [stage, setStage] = useState('idle');
-  const [progress, setProgress] = useState(0);
-  const [statusText, setStatusText] = useState('Iniciando...');
-  const progressIntervalRef = useRef(null);
-  const isFinishedRef = useRef(false);
-
-  // Precarga inteligente de imágenes clave en segundo plano durante el loader
-  const preloadCriticalImages = () => {
-    const list = [
-      eventData.logos.mainCompanyLogo,
-      eventData.logos.logo50Anos,
-      '/assets/libro-50anos.jpg',
-      '/assets/recursos-gallery/photo-1.jpg',
-      '/assets/recursos-gallery/photo-2.jpg',
-      '/assets/recursos-gallery/photo-3.jpg',
-      '/assets/empresas-gallery/empresa-1.jpg',
-      '/assets/empresas-gallery/empresa-2.jpg',
-      '/assets/empresas-gallery/empresa-3.jpg',
-      '/assets/bg-photos/photo-1.jpg',
-      '/assets/bg-photos/photo-2.jpg',
-    ];
-
-    list.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  };
 
   const handleOpen = () => {
     if (stage !== 'idle') return;
 
-    // Disparar precarga de imágenes críticas de inmediato
-    preloadCriticalImages();
-
-    // 1. Desenfocar el sobre (0ms)
+    // 1. Desenfocar el sobre suavemente (0ms)
     setStage('blurring-envelope');
 
-    // 2. Mostrar primer logo: Grupo Nemer (400ms)
+    // 2. Mostrar primer logo: Atef Nemer Grupo de Empresas (400ms)
     setTimeout(() => {
       setStage('showing-logo-nemer');
     }, 400);
 
-    // 3. Mostrar segundo logo: 50 Años y activar el Loader (1100ms)
+    // 3. Mostrar segundo logo: 50 Años (1200ms)
     setTimeout(() => {
       setStage('showing-logo-50');
-      startLoaderSequence();
-    }, 1100);
-  };
-
-  // Secuencia de carga optimizada: ~4.2 segundos de exhibición majestuosa dando tiempo de descarga al teléfono
-  const startLoaderSequence = () => {
-    let currentProgress = 0;
-    const totalDuration = 4200;
-    const intervalTime = 40;
-    const increment = 100 / (totalDuration / intervalTime);
-
-    progressIntervalRef.current = setInterval(() => {
-      currentProgress += increment;
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        clearInterval(progressIntervalRef.current);
-        finishLoading();
+      if (onOpenStart) {
+        onOpenStart();
       }
+    }, 1200);
 
-      setProgress(currentProgress);
-
-      if (currentProgress < 30) {
-        setStatusText('Cargando experiencia de gala...');
-      } else if (currentProgress < 65) {
-        setStatusText('Preparando galería y detalles...');
-      } else if (currentProgress < 95) {
-        setStatusText('Optimizando visualización...');
-      } else {
-        setStatusText('¡Bienvenido!');
-      }
-    }, intervalTime);
-  };
-
-  const finishLoading = () => {
-    if (isFinishedRef.current) return;
-    isFinishedRef.current = true;
-
-    setProgress(100);
-    setStatusText('¡Bienvenido!');
-
-    // Activar y preparar la web completa debajo
-    if (onOpenStart) {
-      onOpenStart();
-    }
-
-    // Breve pausa al 100% para apreciar la bienvenida
+    // 4. Iniciar fundido cinematográfico hacia la invitación (3200ms)
     setTimeout(() => {
       setStage('transition-out');
-    }, 450);
+    }, 3200);
 
-    // Finalizar y desmontar el modal tras el fundido cinematográfico suave
+    // 5. Finalizar y desmontar el modal tras el fundido suave (4200ms)
     setTimeout(() => {
       if (onOpenComplete) {
         onOpenComplete();
       } else if (onOpen) {
         onOpen();
       }
-    }, 1450);
+    }, 4200);
   };
 
   const handleSkip = () => {
-    if (isFinishedRef.current) return;
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-    }
-    finishLoading();
-  };
-
-  useEffect(() => {
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
+    if (onOpenStart) onOpenStart();
+    setStage('transition-out');
+    setTimeout(() => {
+      if (onOpenComplete) {
+        onOpenComplete();
+      } else if (onOpen) {
+        onOpen();
       }
-    };
-  }, []);
+    }, 600);
+  };
 
   // Partículas ambientales de polvo dorado
   const particles = [
@@ -314,62 +241,14 @@ export default function EnvelopeModal({ guestName, onOpen, onOpenStart, onOpenCo
             />
           </div>
 
-          {/* 3. LOADER DE GALA CON BARRA DORADA */}
-          {(stage === 'showing-logo-50' || stage === 'transition-out') && (
-            <div className="w-full max-w-xs sm:max-w-sm mt-8 sm:mt-10 flex flex-col items-center px-4 animate-fade-in">
-              {/* Barra de progreso dorada */}
-              <div
-                className={`w-full h-1.5 sm:h-2 rounded-full overflow-hidden p-[1px] border backdrop-blur-md transition-colors duration-500 ${
-                  isLight
-                    ? 'bg-[#33312C]/80 border-[#706044] shadow-[0_2px_12px_rgba(0,0,0,0.5)]'
-                    : 'bg-[#151515]/80 border-[#51432A] shadow-[0_2px_12px_rgba(0,0,0,0.7)]'
-                }`}
-              >
-                <div
-                  className="h-full rounded-full transition-all duration-150 ease-out relative overflow-hidden"
-                  style={{
-                    width: `${progress}%`,
-                    background: isLight
-                      ? 'linear-gradient(90deg, #A88338 0%, #DDB967 50%, #FFF0CD 100%)'
-                      : 'linear-gradient(90deg, #8A6E2F 0%, #C9A34E 50%, #F0DDA7 100%)',
-                    boxShadow: isLight
-                      ? '0 0 10px rgba(221,185,103,0.7)'
-                      : '0 0 10px rgba(201,163,78,0.7)',
-                  }}
-                >
-                  {/* Shimmer sweep animado dentro de la barra */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-shimmer-sweep" />
-                </div>
-              </div>
-
-              {/* Textos de Estado y Porcentaje */}
-              <div className="w-full flex items-center justify-between mt-2.5 px-0.5 text-[11px] sm:text-xs font-montserrat">
-                <span
-                  className={`tracking-[0.2em] uppercase font-medium transition-colors duration-300 ${
-                    isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
-                  }`}
-                >
-                  {statusText}
-                </span>
-                <span
-                  className={`font-mono font-bold tracking-wider ${
-                    isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
-                  }`}
-                >
-                  {Math.round(progress)}%
-                </span>
-              </div>
-
-              {/* Indicador discreto para saltar */}
-              <span
-                className={`text-[10px] font-montserrat tracking-widest uppercase mt-6 opacity-60 transition-colors duration-300 ${
-                  isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
-                }`}
-              >
-                Toca para acceder directamente
-              </span>
-            </div>
-          )}
+          {/* Indicador discreto para acceder o saltar */}
+          <span
+            className={`text-[10px] sm:text-xs font-montserrat tracking-widest uppercase mt-8 opacity-70 transition-colors duration-300 ${
+              isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
+            }`}
+          >
+            Toca en la pantalla para acceder directamente
+          </span>
         </div>
       )}
     </div>
