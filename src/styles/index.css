@@ -69,6 +69,10 @@
   animation: shimmerSweep 3.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.animate-shimmer-sweep {
+  animation: shimmerSweep 2.2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @keyframes shimmerSweep {
   0% { left: -60%; }
   25% { left: 130%; }
@@ -214,6 +218,17 @@
 .hover-pause:hover .animate-gallery-right-2,
 .hover-pause:hover .animate-gallery-left-3 {
   animation-play-state: paused;
+}
+
+/* Ocultar barra de desplazamiento manteniendo la capacidad de scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Smooth luxury scrollbar */

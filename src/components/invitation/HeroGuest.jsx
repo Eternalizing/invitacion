@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Users, Calendar, Clock } from 'lucide-react';
+import { Users, Calendar, Clock } from 'lucide-react';
 import { eventData } from '../../data/eventData';
 
 export default function HeroGuest({ guestName, passes }) {
@@ -10,9 +10,9 @@ export default function HeroGuest({ guestName, passes }) {
 
       {/* Top Emblem / 50 Años Badge */}
       <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#1c1d28] border border-amber-400/40 text-amber-300 text-[11px] sm:text-xs tracking-wider uppercase font-nemer mb-5 shadow-md whitespace-nowrap">
-        <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] shrink-0" />
         <span>Celebración de Medio Siglo</span>
-        <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] shrink-0" />
       </div>
 
       {/* Official Golden Logo from Recursos - Well Scaled */}

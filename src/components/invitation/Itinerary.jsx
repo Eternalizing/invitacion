@@ -1,12 +1,10 @@
 import React from 'react';
 import { eventData } from '../../data/eventData';
-import { Sparkles, Film, GlassWater, Utensils, Music, Moon } from 'lucide-react';
+import { Film, GlassWater, Utensils, Music, Moon } from 'lucide-react';
 
 export default function Itinerary() {
   const getIcon = (type) => {
     switch (type) {
-      case 'sparkles':
-        return <Sparkles className="w-4 h-4 text-amber-400" />;
       case 'film':
         return <Film className="w-4 h-4 text-amber-400" />;
       case 'glass':
@@ -18,7 +16,7 @@ export default function Itinerary() {
       case 'moon':
         return <Moon className="w-4 h-4 text-amber-400" />;
       default:
-        return <Sparkles className="w-4 h-4 text-amber-400" />;
+        return <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] inline-block" />;
     }
   };
 

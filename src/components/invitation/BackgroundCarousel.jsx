@@ -34,7 +34,7 @@ export default function BackgroundCarousel() {
               key={`r1-a-${idx}`}
               className={`w-36 sm:w-52 md:w-60 h-24 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" className={`w-full h-full object-cover ${imgFilter}`} />
+              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -44,7 +44,7 @@ export default function BackgroundCarousel() {
               key={`r1-b-${idx}`}
               className={`w-36 sm:w-52 md:w-60 h-24 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" className={`w-full h-full object-cover ${imgFilter}`} />
+              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -58,7 +58,7 @@ export default function BackgroundCarousel() {
               key={`r2-a-${idx}`}
               className={`w-40 sm:w-56 md:w-64 h-28 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" className={`w-full h-full object-cover ${imgFilter}`} />
+              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -68,21 +68,21 @@ export default function BackgroundCarousel() {
               key={`r2-b-${idx}`}
               className={`w-40 sm:w-56 md:w-64 h-28 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" className={`w-full h-full object-cover ${imgFilter}`} />
+              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Fila 3: Movimiento infinito y continuo hacia la izquierda (Fotos 19 a 27) */}
-      <div className="w-full overflow-hidden flex select-none">
+      {/* Fila 3: Movimiento infinito y continuo hacia la izquierda (Fotos 19 a 27, en móviles se omite para optimizar carga y rendimiento) */}
+      <div className="hidden sm:flex w-full overflow-hidden select-none">
         <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-left-mid pr-3.5 sm:pr-6">
           {row3.map((src, idx) => (
             <div
               key={`r3-a-${idx}`}
               className={`w-36 sm:w-52 md:w-60 h-24 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" className={`w-full h-full object-cover ${imgFilter}`} />
+              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -92,21 +92,21 @@ export default function BackgroundCarousel() {
               key={`r3-b-${idx}`}
               className={`w-36 sm:w-52 md:w-60 h-24 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" className={`w-full h-full object-cover ${imgFilter}`} />
+              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Fila 4: Movimiento infinito y continuo hacia la derecha */}
-      <div className="w-full overflow-hidden flex select-none">
+      {/* Fila 4: Movimiento infinito y continuo hacia la derecha (en móviles se omite para optimizar carga y rendimiento) */}
+      <div className="hidden sm:flex w-full overflow-hidden select-none">
         <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-right-mid pr-3.5 sm:pr-6">
           {row4.map((src, idx) => (
             <div
               key={`r4-a-${idx}`}
               className={`w-40 sm:w-56 md:w-64 h-28 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" className={`w-full h-full object-cover ${imgFilter}`} />
+              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -116,7 +116,7 @@ export default function BackgroundCarousel() {
               key={`r4-b-${idx}`}
               className={`w-40 sm:w-56 md:w-64 h-28 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" className={`w-full h-full object-cover ${imgFilter}`} />
+              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>

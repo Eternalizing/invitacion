@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Palette } from 'lucide-react';
+import { Palette } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function ThemeToggle() {
@@ -45,10 +45,10 @@ export default function ThemeToggle() {
           </span>
         </div>
 
-        {/* Chispa decorativa */}
-        <Sparkles
-          className={`w-3 h-3 transition-opacity duration-300 ${
-            isLight ? 'text-[#DDB967] opacity-90' : 'text-[#C9A34E] opacity-80'
+        {/* Punto dorado decorativo */}
+        <span
+          className={`w-1.5 h-1.5 rounded-full transition-opacity duration-300 ${
+            isLight ? 'bg-[#DDB967] shadow-[0_0_6px_rgba(221,185,103,0.7)] opacity-90' : 'bg-[#C9A34E] shadow-[0_0_6px_rgba(201,163,78,0.7)] opacity-80'
           }`}
         />
       </button>

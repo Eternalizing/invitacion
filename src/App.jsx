@@ -7,7 +7,7 @@ import BookSection from './components/invitation/BookSection';
 import PhotoGallery from './components/invitation/PhotoGallery';
 import { useGuest } from './hooks/useGuest';
 import { eventData } from './data/eventData';
-import { MapPin, Mail, Church, GlassWater, Moon, Sparkles } from 'lucide-react';
+import { MapPin, Mail, Church, GlassWater, Moon } from 'lucide-react';
 
 function InvitationContent() {
   const { isLight } = useTheme();
@@ -17,21 +17,39 @@ function InvitationContent() {
   const inPageCountdownRef = useRef(null);
   const guestName = useGuest();
 
-  // Bloquear absolutamente el scroll mientras la carta esté cerrada
+  // Bloquear absolutamente el scroll mientras la carta o la secuencia de logos esté en pantalla
   useEffect(() => {
-    if (!isOpen) {
+    if (isEnvelopeMounted) {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+
+      const preventScroll = (e) => {
+        e.preventDefault();
+      };
+
+      window.addEventListener('wheel', preventScroll, { passive: false });
+      window.addEventListener('touchmove', preventScroll, { passive: false });
+
+      return () => {
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        document.body.style.touchAction = '';
+        window.removeEventListener('wheel', preventScroll);
+        window.removeEventListener('touchmove', preventScroll);
+      };
     } else {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
+      document.body.style.touchAction = '';
       window.scrollTo(0, 0);
     }
     return () => {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
+      document.body.style.touchAction = '';
     };
-  }, [isOpen]);
+  }, [isEnvelopeMounted]);
 
   // El contador flotante aparece ÚNICAMENTE cuando el usuario sobrepasa el contador principal
   useEffect(() => {
@@ -70,7 +88,15 @@ function InvitationContent() {
       case 'moon':
         return <Moon className={iconClass} />;
       default:
-        return <Sparkles className={iconClass} />;
+        return (
+          <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center mb-3">
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                isLight ? 'bg-[#DDB967] shadow-[0_0_8px_rgba(221,185,103,0.6)]' : 'bg-[#C9A34E] shadow-[0_0_8px_rgba(201,163,78,0.6)]'
+              }`}
+            />
+          </div>
+        );
     }
   };
 
@@ -87,7 +113,7 @@ function InvitationContent() {
         isLight
           ? 'bg-[#242320] text-[#FAF6ED] selection:bg-[#DDB967] selection:text-[#211A0E]'
           : 'bg-[#080808] text-[#F5F2EA] selection:bg-[#C9A34E] selection:text-[#17120A]'
-      } ${!isOpen ? 'h-screen max-h-screen overflow-hidden' : 'min-h-screen overflow-x-hidden'}`}
+      } ${isEnvelopeMounted ? 'h-screen max-h-screen overflow-hidden' : 'min-h-screen overflow-x-hidden'}`}
     >
       {/* 0. CARRUSEL INFINITO DE FOTOS EN EL FONDO */}
       <BackgroundCarousel />
@@ -106,7 +132,7 @@ function InvitationContent() {
       )}
 
       {/* 2. CONTADOR FLOTANTE CENTRADO SUPERIOR (Aparece al hacer scroll) */}
-      <FloatingCountdown isVisible={isOpen && showStickyCountdown} />
+      <FloatingCountdown isVisible={isOpen && !isEnvelopeMounted && showStickyCountdown} />
 
       {/* 3. Landing Page de Invitación */}
       <main
@@ -473,7 +499,7 @@ function InvitationContent() {
       </div>
 
       {/* 7. Galería de Fotos Conmemorativa (Ancho total nativo, sin overflow ni desajustes) */}
-      <PhotoGallery />
+      <PhotoGallery isReady={isOpen} />
 
       {/* Opción para volver a ver el sobre (Centrado) */}
       <div className="w-full max-w-lg px-5 flex flex-col items-center my-10 z-10">
