@@ -256,7 +256,7 @@ function InvitationContent() {
           </span>
 
           <span
-            className={`text-xs sm:text-sm tracking-[0.32em] uppercase font-medium block mt-2 mb-7 ${
+            className={`text-xs sm:text-sm tracking-[0.24em] sm:tracking-[0.3em] [word-spacing:0.35em] uppercase font-medium block mt-3.5 sm:mt-4 mb-7 sm:mb-8 ${
               isLight ? 'text-[#FAF6ED]' : 'text-[#F5F2EA]'
             }`}
           >

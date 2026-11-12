@@ -22,7 +22,7 @@ export const eventData = {
   date: {
     dayOfWeek: "S Á B A D O",
     dayNumber: "28",
-    monthYear: "N O V I E M B R E   D E   2 0 2 6",
+    monthYear: "Noviembre 2026",
   },
 
   // Programa del Evento con iconos específicos

@@ -28,21 +28,21 @@ export default function BackgroundCarousel() {
     >
       {/* Fila 1: Movimiento infinito y continuo hacia la izquierda (Fotos 1 a 9) */}
       <div className="w-full overflow-hidden flex select-none">
-        <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-left-fast pr-3.5 sm:pr-6">
+        <div className="flex shrink-0 gap-3 sm:gap-6 animate-marquee-left-fast pr-3 sm:pr-6">
           {row1.map((src, idx) => (
             <div
               key={`r1-a-${idx}`}
-              className={`w-36 sm:w-52 md:w-60 h-24 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
+              className={`w-32 sm:w-52 md:w-60 h-20 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
               <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
-        <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-left-fast pr-3.5 sm:pr-6" aria-hidden="true">
+        <div className="flex shrink-0 gap-3 sm:gap-6 animate-marquee-left-fast pr-3 sm:pr-6" aria-hidden="true">
           {row1.map((src, idx) => (
             <div
               key={`r1-b-${idx}`}
-              className={`w-36 sm:w-52 md:w-60 h-24 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
+              className={`w-32 sm:w-52 md:w-60 h-20 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
               <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
@@ -52,21 +52,21 @@ export default function BackgroundCarousel() {
 
       {/* Fila 2: Movimiento infinito y continuo hacia la derecha (Fotos 10 a 18) */}
       <div className="w-full overflow-hidden flex select-none">
-        <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-right-fast pr-3.5 sm:pr-6">
+        <div className="flex shrink-0 gap-3 sm:gap-6 animate-marquee-right-fast pr-3 sm:pr-6">
           {row2.map((src, idx) => (
             <div
               key={`r2-a-${idx}`}
-              className={`w-40 sm:w-56 md:w-64 h-28 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
+              className={`w-36 sm:w-56 md:w-64 h-24 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
               <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
-        <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-right-fast pr-3.5 sm:pr-6" aria-hidden="true">
+        <div className="flex shrink-0 gap-3 sm:gap-6 animate-marquee-right-fast pr-3 sm:pr-6" aria-hidden="true">
           {row2.map((src, idx) => (
             <div
               key={`r2-b-${idx}`}
-              className={`w-40 sm:w-56 md:w-64 h-28 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
+              className={`w-36 sm:w-56 md:w-64 h-24 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
               <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
@@ -74,23 +74,23 @@ export default function BackgroundCarousel() {
         </div>
       </div>
 
-      {/* Fila 3: Movimiento infinito y continuo hacia la izquierda (Fotos 19 a 27, en móviles se omite para optimizar carga y rendimiento) */}
-      <div className="hidden sm:flex w-full overflow-hidden select-none">
-        <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-left-mid pr-3.5 sm:pr-6">
+      {/* Fila 3: Movimiento infinito y continuo hacia la izquierda (Fotos 19 a 27) */}
+      <div className="w-full overflow-hidden flex select-none">
+        <div className="flex shrink-0 gap-3 sm:gap-6 animate-marquee-left-mid pr-3 sm:pr-6">
           {row3.map((src, idx) => (
             <div
               key={`r3-a-${idx}`}
-              className={`w-36 sm:w-52 md:w-60 h-24 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
+              className={`w-32 sm:w-52 md:w-60 h-20 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
               <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
-        <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-left-mid pr-3.5 sm:pr-6" aria-hidden="true">
+        <div className="flex shrink-0 gap-3 sm:gap-6 animate-marquee-left-mid pr-3 sm:pr-6" aria-hidden="true">
           {row3.map((src, idx) => (
             <div
               key={`r3-b-${idx}`}
-              className={`w-36 sm:w-52 md:w-60 h-24 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
+              className={`w-32 sm:w-52 md:w-60 h-20 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
               <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
@@ -98,23 +98,23 @@ export default function BackgroundCarousel() {
         </div>
       </div>
 
-      {/* Fila 4: Movimiento infinito y continuo hacia la derecha (en móviles se omite para optimizar carga y rendimiento) */}
-      <div className="hidden sm:flex w-full overflow-hidden select-none">
-        <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-right-mid pr-3.5 sm:pr-6">
+      {/* Fila 4: Movimiento infinito y continuo hacia la derecha */}
+      <div className="w-full overflow-hidden flex select-none">
+        <div className="flex shrink-0 gap-3 sm:gap-6 animate-marquee-right-mid pr-3 sm:pr-6">
           {row4.map((src, idx) => (
             <div
               key={`r4-a-${idx}`}
-              className={`w-40 sm:w-56 md:w-64 h-28 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
+              className={`w-36 sm:w-56 md:w-64 h-24 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
               <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
-        <div className="flex shrink-0 gap-3.5 sm:gap-6 animate-marquee-right-mid pr-3.5 sm:pr-6" aria-hidden="true">
+        <div className="flex shrink-0 gap-3 sm:gap-6 animate-marquee-right-mid pr-3 sm:pr-6" aria-hidden="true">
           {row4.map((src, idx) => (
             <div
               key={`r4-b-${idx}`}
-              className={`w-40 sm:w-56 md:w-64 h-28 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
+              className={`w-36 sm:w-56 md:w-64 h-24 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
               <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
