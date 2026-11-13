@@ -6,6 +6,7 @@ import BackgroundCarousel from './components/invitation/BackgroundCarousel';
 import BookSection from './components/invitation/BookSection';
 import PhotoGallery from './components/invitation/PhotoGallery';
 import { useGuest } from './hooks/useGuest';
+import { useScrollReveal } from './hooks/useScrollReveal';
 import { eventData } from './data/eventData';
 import { MapPin, Mail, Church, GlassWater, Moon } from 'lucide-react';
 
@@ -16,6 +17,9 @@ function InvitationContent() {
   const [showStickyCountdown, setShowStickyCountdown] = useState(false);
   const inPageCountdownRef = useRef(null);
   const guestName = useGuest();
+
+  // Revelado suave de secciones al hacer scroll (una vez abierta la invitación)
+  useScrollReveal(isOpen && !isEnvelopeMounted);
 
   // Bloquear absolutamente el scroll mientras la carta o la secuencia de logos esté en pantalla
   useEffect(() => {
@@ -101,7 +105,7 @@ function InvitationContent() {
   };
 
   // Tarjetas: Paleta 02 (#33312C y #706044) vs Paleta 01 (#151515 y #51432A)
-  const cardBaseClass = `w-full rounded-3xl p-7 sm:p-10 text-center my-6 z-10 backdrop-blur-md transition-all duration-500 ${
+  const cardBaseClass = `reveal w-full rounded-3xl p-7 sm:p-10 text-center my-6 z-10 backdrop-blur-md transition-all duration-500 ${
     isLight
       ? 'bg-[#33312C] border border-[#706044] shadow-[0_15px_40px_rgba(0,0,0,0.65)]'
       : 'bg-[#151515] border border-[#51432A] shadow-[0_15px_40px_rgba(0,0,0,0.85)]'
@@ -165,11 +169,7 @@ function InvitationContent() {
             <img
               src={eventData.logos.mainCompanyLogo}
               alt="Atef Nemer Grupo de Empresas"
-              className={`max-h-20 sm:max-h-24 w-auto max-w-full object-contain filter ${
-                isLight
-                  ? 'drop-shadow-[0_4px_16px_rgba(221,185,103,0.35)]'
-                  : 'drop-shadow-[0_4px_16px_rgba(201,163,78,0.35)]'
-              }`}
+              className="max-h-20 sm:max-h-24 w-auto max-w-full object-contain logo-glow"
             />
           </div>
 
@@ -178,11 +178,8 @@ function InvitationContent() {
             <img
               src={eventData.logos.logo50Anos}
               alt="50 Años de Trayectoria"
-              className={`max-h-16 sm:max-h-20 w-auto max-w-full object-contain filter ${
-                isLight
-                  ? 'drop-shadow-[0_4px_12px_rgba(221,185,103,0.4)]'
-                  : 'drop-shadow-[0_4px_12px_rgba(201,163,78,0.4)]'
-              }`}
+              className="max-h-16 sm:max-h-20 w-auto max-w-full object-contain logo-glow"
+              style={{ animationDelay: '2s' }}
             />
           </div>
         </header>
@@ -197,20 +194,20 @@ function InvitationContent() {
             {eventData.invitationText.header}
           </span>
 
-          {/* NOMBRE DEL INVITADO: Título en #FFF0CD (Paleta 02) o #F0DDA7 (Paleta 01) */}
-          <h2
-            className={`font-serif italic text-4xl sm:text-5xl md:text-6xl font-normal leading-tight my-4 break-words py-1 ${
-              isLight
-                ? 'text-[#FFF0CD] drop-shadow-[0_4px_14px_rgba(0,0,0,0.8)]'
-                : 'text-[#F0DDA7] drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]'
-            }`}
-          >
-            {guestName}
-          </h2>
+          {/* NOMBRE DEL INVITADO: Dorado metálico con brillo animado y destellos */}
+          <div className="relative inline-block max-w-full px-3">
+            <span className="twinkle" style={{ top: '8%', left: '2%', animationDelay: '0s' }} />
+            <span className="twinkle" style={{ top: '18%', right: '4%', animationDelay: '0.9s' }} />
+            <span className="twinkle" style={{ bottom: '12%', left: '12%', animationDelay: '1.7s' }} />
+            <span className="twinkle" style={{ bottom: '4%', right: '14%', animationDelay: '2.3s' }} />
+            <h2 className="font-serif italic text-4xl sm:text-5xl md:text-6xl font-normal leading-tight my-4 break-words py-1 px-1 text-gold-shine gold-glow-pulse">
+              {guestName}
+            </h2>
+          </div>
 
-          {/* Fina línea divisoria dorada */}
+          {/* Fina línea divisoria dorada con destello */}
           <div
-            className={`w-24 h-[1px] bg-gradient-to-r from-transparent to-transparent mx-auto my-5 ${
+            className={`gold-line-shimmer w-24 h-[1px] bg-gradient-to-r from-transparent to-transparent mx-auto my-5 ${
               isLight ? 'via-[#DDB967]' : 'via-[#C9A34E]'
             }`}
           />
@@ -235,7 +232,7 @@ function InvitationContent() {
         </section>
 
         {/* Bloque de Fecha */}
-        <section className="my-8 text-center z-10 w-full flex flex-col items-center">
+        <section className="reveal my-8 text-center z-10 w-full flex flex-col items-center">
           <span
             className={`text-xs sm:text-sm tracking-[0.38em] uppercase font-bold block mb-2 ${
               isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
@@ -244,14 +241,8 @@ function InvitationContent() {
             {eventData.date.dayOfWeek}
           </span>
 
-          {/* Día en Dorado Principal: #DDB967 vs #C9A34E */}
-          <span
-            className={`font-serif text-6xl sm:text-7xl font-normal block my-2 leading-none ${
-              isLight
-                ? 'text-[#DDB967] drop-shadow-[0_4px_16px_rgba(221,185,103,0.35)]'
-                : 'text-[#C9A34E] drop-shadow-[0_4px_16px_rgba(201,163,78,0.3)]'
-            }`}
-          >
+          {/* Día en dorado metálico brillante */}
+          <span className="font-serif text-6xl sm:text-7xl font-normal block my-2 leading-none px-2 text-gold-shine gold-glow-pulse">
             {eventData.date.dayNumber}
           </span>
 
@@ -268,7 +259,7 @@ function InvitationContent() {
             href={eventData.rsvp.googleFormUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={`btn-gold-shimmer inline-flex items-center justify-center w-auto min-w-[240px] sm:min-w-[280px] max-w-[90vw] px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-montserrat font-extrabold text-[11px] sm:text-xs md:text-sm tracking-[0.16em] sm:tracking-[0.18em] uppercase active:scale-95 transition-all cursor-pointer whitespace-nowrap select-none ${
+            className={`btn-gold-shimmer btn-glow-pulse inline-flex items-center justify-center w-auto min-w-[240px] sm:min-w-[280px] max-w-[90vw] px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-montserrat font-extrabold text-[11px] sm:text-xs md:text-sm tracking-[0.16em] sm:tracking-[0.18em] uppercase active:scale-95 transition-all cursor-pointer whitespace-nowrap select-none ${
               isLight
                 ? 'bg-[#DDB967] hover:bg-[#e8c77b] text-[#211A0E] shadow-[0_6px_25px_rgba(221,185,103,0.4)] hover:shadow-[0_8px_35px_rgba(221,185,103,0.6)] border border-[#FFF0CD]/40'
                 : 'bg-[#C9A34E] hover:bg-[#d8b560] text-[#17120A] shadow-[0_6px_25px_rgba(201,163,78,0.4)] hover:shadow-[0_8px_35px_rgba(201,163,78,0.6)] border border-[#F0DDA7]/40'
@@ -279,16 +270,12 @@ function InvitationContent() {
         </section>
 
         {/* CONTEO REGRESIVO */}
-        <div ref={inPageCountdownRef} className="w-full">
+        <div ref={inPageCountdownRef} className="reveal w-full">
           <Countdown />
         </div>
 
         {/* Section: Una noche para recordar (Título en #FFF0CD o #F0DDA7) */}
-        <h2
-          className={`font-serif italic text-2xl sm:text-3xl font-normal mt-12 mb-6 z-10 ${
-            isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
-          }`}
-        >
+        <h2 className="reveal font-serif italic text-2xl sm:text-3xl font-normal mt-12 mb-6 z-10 px-2 text-gold-shine">
           {eventData.itineraryTitle}
         </h2>
 
@@ -440,12 +427,8 @@ function InvitationContent() {
         </section>
 
         {/* 4. Agradecimiento: Gracias por ser parte de nuestra historia */}
-        <section className="mt-10 mb-4 w-full flex flex-col items-center text-center z-10">
-          <h2
-            className={`font-serif text-2xl sm:text-3xl font-normal leading-snug mb-2 ${
-              isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
-            }`}
-          >
+        <section className="reveal mt-10 mb-4 w-full flex flex-col items-center text-center z-10">
+          <h2 className="font-serif text-2xl sm:text-3xl font-normal leading-snug mb-2 px-2 text-gold-shine">
             {eventData.rsvp.title}
           </h2>
 
@@ -467,13 +450,13 @@ function InvitationContent() {
         <BookSection />
 
         {/* 6. Confirmación de Asistencia (Abajo del libro oculto) */}
-        <section className="mt-8 mb-6 w-full flex flex-col items-center text-center z-10">
+        <section className="reveal mt-8 mb-6 w-full flex flex-col items-center text-center z-10">
           {/* Main Solid Gold Confirmation Button */}
           <a
             href={eventData.rsvp.googleFormUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={`btn-gold-shimmer inline-flex items-center justify-center w-auto min-w-[250px] sm:min-w-[300px] max-w-[90vw] px-6 sm:px-9 py-3.5 sm:py-4 rounded-full font-montserrat font-extrabold text-[11px] sm:text-xs md:text-sm tracking-[0.16em] sm:tracking-[0.18em] uppercase active:scale-95 transition-all cursor-pointer whitespace-nowrap select-none ${
+            className={`btn-gold-shimmer btn-glow-pulse inline-flex items-center justify-center w-auto min-w-[250px] sm:min-w-[300px] max-w-[90vw] px-6 sm:px-9 py-3.5 sm:py-4 rounded-full font-montserrat font-extrabold text-[11px] sm:text-xs md:text-sm tracking-[0.16em] sm:tracking-[0.18em] uppercase active:scale-95 transition-all cursor-pointer whitespace-nowrap select-none ${
               isLight
                 ? 'bg-[#DDB967] hover:bg-[#e8c77b] text-[#211A0E] shadow-[0_6px_30px_rgba(221,185,103,0.45)] hover:shadow-[0_8px_40px_rgba(221,185,103,0.7)] border border-[#FFF0CD]/40'
                 : 'bg-[#C9A34E] hover:bg-[#d8b560] text-[#17120A] shadow-[0_6px_30px_rgba(201,163,78,0.45)] hover:shadow-[0_8px_40px_rgba(201,163,78,0.7)] border border-[#F0DDA7]/40'

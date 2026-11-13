@@ -248,11 +248,7 @@ export default function PhotoGallery({ isReady = true }) {
           <span>GALERÍA DE MOMENTOS</span>
         </div>
 
-        <h2
-          className={`font-serif text-2xl sm:text-3xl md:text-4xl font-normal leading-tight tracking-wide mb-2 transition-colors duration-500 ${
-            isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
-          }`}
-        >
+        <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal leading-tight tracking-wide mb-2 px-2 text-gold-shine">
           50 Años de Historia
         </h2>
 
@@ -298,11 +294,7 @@ export default function PhotoGallery({ isReady = true }) {
           <span>EMPRESAS DEL GRUPO</span>
         </div>
 
-        <h2
-          className={`font-serif text-2xl sm:text-3xl md:text-4xl font-normal leading-tight tracking-wide mb-2 transition-colors duration-500 ${
-            isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
-          }`}
-        >
+        <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal leading-tight tracking-wide mb-2 px-2 text-gold-shine">
           Nuestras Sedes y Empresas
         </h2>
 
