@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import SmoothImage from '../common/SmoothImage';
 
 export default function HomeColorCarousel() {
   const { isLight } = useTheme();
@@ -77,38 +76,43 @@ export default function HomeColorCarousel() {
     >
       {rows.map((rowImages, rIdx) => {
         const animClass = animations[rIdx % animations.length];
+        // Duplicamos el bloque para garantizar una longitud ininterrumpida que supera con creces cualquier resolución
+        const blockImages = [...rowImages, ...rowImages];
 
         return (
           <div
             key={`row-${rIdx}`}
             className="w-full flex-1 min-h-0 overflow-hidden flex items-center select-none"
           >
+            {/* Bloque A (Carga inmediata sin lazy-load para evitar pantallas negras en bucles continuos) */}
             <div className={`flex shrink-0 h-full items-center gap-2 sm:gap-3 ${animClass} pr-2 sm:pr-3`}>
-              {rowImages.map((src, idx) => (
+              {blockImages.map((src, idx) => (
                 <div
                   key={`r${rIdx}-a-${idx}`}
                   className={`h-[88%] aspect-[16/10] shrink-0 rounded-xl overflow-hidden transition-all duration-300 ${cardStyle}`}
                 >
-                  <SmoothImage
+                  <img
                     src={src}
                     alt=""
-                    loading="lazy"
+                    loading="eager"
                     decoding="async"
                     className="w-full h-full object-cover saturate-[1.12] contrast-[1.06]"
                   />
                 </div>
               ))}
             </div>
+
+            {/* Bloque B gemelo para empalme 100% perfecto e infinito */}
             <div className={`flex shrink-0 h-full items-center gap-2 sm:gap-3 ${animClass} pr-2 sm:pr-3`} aria-hidden="true">
-              {rowImages.map((src, idx) => (
+              {blockImages.map((src, idx) => (
                 <div
                   key={`r${rIdx}-b-${idx}`}
                   className={`h-[88%] aspect-[16/10] shrink-0 rounded-xl overflow-hidden transition-all duration-300 ${cardStyle}`}
                 >
-                  <SmoothImage
+                  <img
                     src={src}
                     alt=""
-                    loading="lazy"
+                    loading="eager"
                     decoding="async"
                     className="w-full h-full object-cover saturate-[1.12] contrast-[1.06]"
                   />

@@ -455,6 +455,31 @@ img {
   transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.65s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* =====================================================================
+   LÍNEA DORADA VERTICAL CON HAZ DE LUZ CONTINUO EN CASCADA (TIMELINE BEAM)
+   ===================================================================== */
+@keyframes verticalBeamDown {
+  0% {
+    top: -25%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 105%;
+    opacity: 0;
+  }
+}
+
+.animate-vertical-beam {
+  animation: verticalBeamDown 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: top, opacity;
+}
+
 /* Accesibilidad: respetar a quienes prefieren menos movimiento */
 @media (prefers-reduced-motion: reduce) {
   .text-gold-shine,
@@ -463,7 +488,8 @@ img {
   .btn-glow-pulse,
   .twinkle,
   .gold-line-shimmer::after,
-  .animate-border-beam {
+  .animate-border-beam,
+  .animate-vertical-beam {
     animation: none !important;
   }
   .reveal,

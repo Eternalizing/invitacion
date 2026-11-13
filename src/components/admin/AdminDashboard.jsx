@@ -59,13 +59,53 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleCopyLink = (guestId) => {
-    const origin = window.location.origin || '';
+  const handleCopyLink = async (guestId) => {
+    const origin = window.location.origin || `${window.location.protocol}//${window.location.host}`;
     const link = `${origin}/?id=${encodeURIComponent(guestId)}`;
-    navigator.clipboard.writeText(link).then(() => {
-      setCopiedId(guestId);
-      setTimeout(() => setCopiedId(null), 2000);
-    });
+    let copied = false;
+
+    // 1. Intentar API moderna (requiere HTTPS o localhost)
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(link);
+        copied = true;
+      } catch (err) {
+        console.warn('Fallo navigator.clipboard, usando fallback móvil:', err);
+      }
+    }
+
+    // 2. Fallback universal para teléfonos móviles, iOS Safari y conexiones locales HTTP
+    if (!copied) {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = link;
+        textArea.style.position = 'fixed';
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = '0';
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        textArea.setAttribute('readonly', '');
+        document.body.appendChild(textArea);
+
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, link.length);
+
+        copied = document.execCommand('copy');
+        document.body.removeChild(textArea);
+      } catch (err) {
+        console.error('Error al copiar link con fallback:', err);
+      }
+    }
+
+    // Feedback visual inmediato en el botón correspondiente
+    setCopiedId(guestId);
+    setTimeout(() => setCopiedId(null), 2200);
   };
 
   const handleStatusChange = async (guestId, newStatus) => {

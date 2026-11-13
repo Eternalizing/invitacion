@@ -6,6 +6,7 @@ import BackgroundCarousel from './components/invitation/BackgroundCarousel';
 import BookSection from './components/invitation/BookSection';
 import PhotoGallery from './components/invitation/PhotoGallery';
 import ConfirmationDialog from './components/invitation/ConfirmationDialog';
+import CascadeTimeline from './components/invitation/CascadeTimeline';
 import GlowingCard from './components/common/GlowingCard';
 import SmoothImage from './components/common/SmoothImage';
 import FallbackHome from './components/common/FallbackHome';
@@ -123,34 +124,6 @@ function InvitationContent({ guest, guestName = 'Invitado Especial', passes = 1 
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isOpen]);
-
-  // Helper para renderizar iconos del programa con el dorado principal de cada paleta y desvanecimiento suave
-  const getProgramIcon = (iconType) => {
-    const iconClass = `w-8 h-8 sm:w-9 sm:h-9 filter mb-3 animate-icon-fadeIn transition-all duration-500 ${
-      isLight
-        ? 'text-[#DDB967] drop-shadow-[0_2px_8px_rgba(221,185,103,0.45)]'
-        : 'text-[#C9A34E] drop-shadow-[0_2px_8px_rgba(201,163,78,0.45)]'
-    }`;
-
-    switch (iconType) {
-      case 'church':
-        return <Church className={iconClass} />;
-      case 'glass':
-        return <GlassWater className={iconClass} />;
-      case 'moon':
-        return <Moon className={iconClass} />;
-      default:
-        return (
-          <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center mb-3">
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                isLight ? 'bg-[#DDB967] shadow-[0_0_8px_rgba(221,185,103,0.6)]' : 'bg-[#C9A34E] shadow-[0_0_8px_rgba(201,163,78,0.6)]'
-              }`}
-            />
-          </div>
-        );
-    }
-  };
 
   return (
     <div
@@ -360,62 +333,21 @@ function InvitationContent({ guest, guestName = 'Invitado Especial', passes = 1 
           {eventData.itineraryTitle}
         </h2>
 
-        {/* Card: Programa del Evento (Borde dorado con haz de luz continuo) */}
-        <GlowingCard className="reveal my-6" innerClassName="p-7 sm:p-10 text-center">
+        {/* Card: Programa del Evento en Cascada Alternada (Borde dorado con haz de luz continuo) */}
+        <GlowingCard className="reveal my-6" innerClassName="p-5 sm:p-8 text-center">
           <span
-            className={`text-xs sm:text-sm tracking-[0.3em] font-bold uppercase block mb-7 ${
+            className={`text-xs sm:text-sm tracking-[0.3em] font-bold uppercase block mb-6 ${
               isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
             }`}
           >
             {eventData.itineraryHeader}
           </span>
 
-          {eventData.itinerary.map((item, idx) => (
-            <div key={idx}>
-              <div className="py-4 flex flex-col items-center">
-                {/* Ícono de cada etapa */}
-                {getProgramIcon(item.icon)}
-
-                <span
-                  className={`text-base sm:text-lg font-bold block font-montserrat tracking-wider mb-1.5 ${
-                    isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
-                  }`}
-                >
-                  {item.time}
-                </span>
-
-                <h3
-                  className={`font-serif italic text-lg sm:text-xl font-normal mb-2 ${
-                    isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
-                  }`}
-                >
-                  {item.title}
-                </h3>
-
-                {item.details.map((detail, dIdx) => (
-                  <p
-                    key={dIdx}
-                    className={`text-xs sm:text-sm mt-1 font-light leading-relaxed ${
-                      isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
-                    }`}
-                  >
-                    {detail}
-                  </p>
-                ))}
-              </div>
-
-              {idx < eventData.itinerary.length - 1 && (
-                <div
-                  className={`w-2/3 mx-auto border-t my-6 ${
-                    isLight ? 'border-[#706044]' : 'border-[#51432A]'
-                  }`}
-                />
-              )}
-            </div>
-          ))}
+          {/* Línea de tiempo en cascada alternada con haz de luz continuo y nodos dorados */}
+          <CascadeTimeline />
         </GlowingCard>
 
-        {/* Card: Lugar & Código de Vestimenta (Borde dorado con haz de luz continuo) */}
+        {/* Card: Lugar (Borde dorado con haz de luz continuo) */}
         <GlowingCard className="reveal my-6" innerClassName="p-7 sm:p-10 text-center">
           {/* MapPin */}
           <MapPin
@@ -464,19 +396,14 @@ function InvitationContent({ guest, guestName = 'Invitado Especial', passes = 1 
             <span>CÓMO LLEGAR</span>
             <span className="text-xs shrink-0">↗</span>
           </a>
+        </GlowingCard>
 
-          {/* Divider */}
-          <div
-            className={`w-2/3 mx-auto border-t my-8 ${
-              isLight ? 'border-[#706044]' : 'border-[#51432A]'
-            }`}
-          />
-
-          {/* Dress code */}
+        {/* Card: Código de Vestimenta (Tarjeta individual exclusiva con borde dorado y haz de luz continuo) */}
+        <GlowingCard className="reveal my-6" innerClassName="p-7 sm:p-10 text-center">
           <div className="flex flex-col items-center">
-            {/* Ícono pajarita cóctel */}
+            {/* Ícono pajarita cóctel de gala */}
             <svg
-              className={`w-8 h-8 sm:w-9 sm:h-9 filter mb-3 ${
+              className={`w-9 h-9 sm:w-10 sm:h-10 filter mb-3 ${
                 isLight
                   ? 'text-[#DDB967] drop-shadow-[0_2px_8px_rgba(221,185,103,0.45)]'
                   : 'text-[#C9A34E] drop-shadow-[0_2px_8px_rgba(201,163,78,0.45)]'
@@ -490,7 +417,7 @@ function InvitationContent({ guest, guestName = 'Invitado Especial', passes = 1 
             </svg>
 
             <span
-              className={`text-[11px] sm:text-xs md:text-sm tracking-[0.2em] sm:tracking-[0.28em] font-bold uppercase block mb-1.5 whitespace-nowrap ${
+              className={`text-xs sm:text-sm tracking-[0.35em] font-bold uppercase block mb-2.5 ${
                 isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
               }`}
             >
@@ -498,11 +425,19 @@ function InvitationContent({ guest, guestName = 'Invitado Especial', passes = 1 
             </span>
 
             <p
-              className={`font-serif italic text-2xl sm:text-3xl mt-1 ${
+              className={`font-serif italic text-2xl sm:text-3xl my-1 ${
                 isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
               }`}
             >
               {eventData.dressCode.style}
+            </p>
+
+            <p
+              className={`text-xs sm:text-sm mt-3 font-light max-w-xs ${
+                isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
+              }`}
+            >
+              Traje Cóctel / Formal para una noche de celebración inolvidable.
             </p>
           </div>
         </GlowingCard>

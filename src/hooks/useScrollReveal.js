@@ -11,10 +11,9 @@ export function useScrollReveal(enabled) {
     if (!enabled) return;
 
     const selector = '.reveal:not(.is-visible), .reveal-soft:not(.is-visible), .reveal-scale:not(.is-visible)';
-    const elements = document.querySelectorAll(selector);
 
     if (!('IntersectionObserver' in window)) {
-      elements.forEach((el) => el.classList.add('is-visible'));
+      document.querySelectorAll(selector).forEach((el) => el.classList.add('is-visible'));
       return;
     }
 
@@ -32,15 +31,34 @@ export function useScrollReveal(enabled) {
 
             el.classList.add('is-visible');
             observer.unobserve(el);
-            staggerDelay += 90; // Desfase elegante de 90ms entre elementos consecutivos
+            staggerDelay += 80; // Desfase elegante de 80ms entre elementos consecutivos
           }
         });
       },
-      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
+      { threshold: 0.02, rootMargin: '120px 0px 80px 0px' }
     );
 
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    const observeAll = () => {
+      document.querySelectorAll(selector).forEach((el) => observer.observe(el));
+    };
+
+    observeAll();
+
+    // Re-verificar para elementos que terminen de renderizarse o calcular altura
+    const t1 = setTimeout(observeAll, 300);
+    const t2 = setTimeout(observeAll, 800);
+
+    // Fallback de seguridad: garantiza que ningún contenido quede oculto en móviles
+    const tSafety = setTimeout(() => {
+      document.querySelectorAll(selector).forEach((el) => el.classList.add('is-visible'));
+    }, 2500);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(tSafety);
+      observer.disconnect();
+    };
   }, [enabled]);
 }
 
