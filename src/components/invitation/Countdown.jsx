@@ -104,7 +104,7 @@ function calculateTimelineState() {
     stage: 'PRE_EVENT',
     title: 'CUENTA REGRESIVA',
     floatingLabel: 'FALTAN',
-    subtitle: 'Para el inicio de la gala (Misa 5:30 p. m.)',
+    subtitle: 'Primer evento (Misa 5:30 p. m.)',
     iconType: 'clock',
     isFinished: false,
     ...calcTimeParts(diff),
