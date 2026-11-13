@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
+import SmoothImage from '../common/SmoothImage';
 
 export default function BackgroundCarousel() {
   const { isLight } = useTheme();
@@ -34,7 +35,7 @@ export default function BackgroundCarousel() {
               key={`r1-a-${idx}`}
               className={`w-32 sm:w-52 md:w-60 h-20 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
+              <SmoothImage src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -44,7 +45,7 @@ export default function BackgroundCarousel() {
               key={`r1-b-${idx}`}
               className={`w-32 sm:w-52 md:w-60 h-20 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
+              <SmoothImage src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -58,7 +59,7 @@ export default function BackgroundCarousel() {
               key={`r2-a-${idx}`}
               className={`w-36 sm:w-56 md:w-64 h-24 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
+              <SmoothImage src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -68,7 +69,7 @@ export default function BackgroundCarousel() {
               key={`r2-b-${idx}`}
               className={`w-36 sm:w-56 md:w-64 h-24 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
+              <SmoothImage src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -82,7 +83,7 @@ export default function BackgroundCarousel() {
               key={`r3-a-${idx}`}
               className={`w-32 sm:w-52 md:w-60 h-20 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
+              <SmoothImage src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -92,7 +93,7 @@ export default function BackgroundCarousel() {
               key={`r3-b-${idx}`}
               className={`w-32 sm:w-52 md:w-60 h-20 sm:h-36 md:h-40 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
+              <SmoothImage src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -106,7 +107,7 @@ export default function BackgroundCarousel() {
               key={`r4-a-${idx}`}
               className={`w-36 sm:w-56 md:w-64 h-24 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
+              <SmoothImage src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>
@@ -116,7 +117,7 @@ export default function BackgroundCarousel() {
               key={`r4-b-${idx}`}
               className={`w-36 sm:w-56 md:w-64 h-24 sm:h-38 md:h-44 shrink-0 rounded-xl overflow-hidden transition-colors duration-500 ${cardStyle}`}
             >
-              <img src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
+              <SmoothImage src={src} alt="" loading="lazy" decoding="async" className={`w-full h-full object-cover ${imgFilter}`} />
             </div>
           ))}
         </div>

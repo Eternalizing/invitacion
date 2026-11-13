@@ -1,5 +1,7 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
+import GlowingCard from '../common/GlowingCard';
+import SmoothImage from '../common/SmoothImage';
 
 export default function BookSection() {
   const { isLight } = useTheme();
@@ -17,13 +19,10 @@ export default function BookSection() {
   ];
 
   return (
-    <section
+    <GlowingCard
+      className="reveal my-8 group"
+      innerClassName="overflow-hidden"
       style={{ contentVisibility: 'auto', containIntrinsicSize: '0 320px' }}
-      className={`w-full my-8 relative overflow-hidden rounded-3xl group z-10 transition-all duration-500 ${
-        isLight
-          ? 'border border-[#706044] bg-[#33312C] shadow-[0_20px_50px_rgba(0,0,0,0.7)]'
-          : 'border border-[#51432A] bg-[#151515] shadow-[0_25px_60px_rgba(0,0,0,0.95)]'
-      }`}
     >
       {/* 1. LUZ AMBIENTAL */}
       <div
@@ -56,9 +55,9 @@ export default function BookSection() {
         />
       ))}
 
-      {/* 3. IMAGEN DEL LIBRO - Proporción 16:9 nítida */}
+      {/* 3. IMAGEN DEL LIBRO - Proporción 16:9 nítida con desvanecimiento suave */}
       <div className="relative w-full aspect-[16/9] overflow-hidden">
-        <img
+        <SmoothImage
           src="/assets/libro-50anos.jpg"
           alt="Libro Conmemorativo 50 Años"
           loading="lazy"
@@ -93,6 +92,6 @@ export default function BookSection() {
           </h3>
         </div>
       </div>
-    </section>
+    </GlowingCard>
   );
 }

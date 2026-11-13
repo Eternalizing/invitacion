@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { Camera, Building2 } from 'lucide-react';
+import SmoothImage from '../common/SmoothImage';
 
 function GalleryRow({ items, direction = 'left', speed = 0.65, cardContainerClass, isReady = true }) {
   const containerRef = useRef(null);
@@ -168,7 +169,7 @@ function GalleryRow({ items, direction = 'left', speed = 0.65, cardContainerClas
             key={`${item.id}-${idx}`}
             className={`relative shrink-0 w-36 sm:w-48 md:w-56 h-28 sm:h-36 md:h-40 rounded-xl sm:rounded-2xl overflow-hidden select-none transition-all duration-300 transform ${cardContainerClass}`}
           >
-            <img
+            <SmoothImage
               src={item.src}
               alt=""
               loading={idx < 4 ? 'eager' : 'lazy'}
@@ -235,16 +236,16 @@ export default function PhotoGallery({ isReady = true }) {
   return (
     <section
       style={{ contentVisibility: 'auto', containIntrinsicSize: '0 800px' }}
-      className="w-full max-w-full my-12 sm:my-16 flex flex-col items-center z-10 relative overflow-hidden"
+      className="reveal w-full max-w-full my-12 sm:my-16 flex flex-col items-center z-10 relative overflow-hidden"
     >
       {/* =========================================================================
           1. PRIMERA GALERÍA: 50 AÑOS DE HISTORIA (27 Fotos oficiales)
          ========================================================================= */}
-      <div className="w-full max-w-lg px-5 flex flex-col items-center text-center mb-6 sm:mb-8">
+      <div className="reveal-soft w-full max-w-lg px-5 flex flex-col items-center text-center mb-6 sm:mb-8">
         <div
           className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-[10px] sm:text-xs tracking-[0.22em] uppercase font-bold mb-3 shadow-md backdrop-blur-md transition-colors duration-500 ${badgeClass}`}
         >
-          <Camera className="w-3.5 h-3.5" />
+          <Camera className="w-3.5 h-3.5 animate-icon-fadeIn" />
           <span>GALERÍA DE MOMENTOS</span>
         </div>
 
@@ -290,7 +291,7 @@ export default function PhotoGallery({ isReady = true }) {
         <div
           className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-[10px] sm:text-xs tracking-[0.22em] uppercase font-bold mb-3 shadow-md backdrop-blur-md transition-colors duration-500 ${badgeClass}`}
         >
-          <Building2 className="w-3.5 h-3.5" />
+          <Building2 className="w-3.5 h-3.5 animate-icon-fadeIn" />
           <span>EMPRESAS DEL GRUPO</span>
         </div>
 

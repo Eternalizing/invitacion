@@ -19,6 +19,11 @@ export const eventData = {
 
   // Fecha y Conteo Regresivo (5:30 p. m. hora de inicio)
   eventTimestamp: "2026-11-28T17:30:00",
+  scheduleTimestamps: {
+    misa: "2026-11-28T17:30:00",
+    recepcion: "2026-11-28T19:00:00", // Misa de 1 hora y 30 min (5:30 p. m. a 7:00 p. m.)
+    conclusion: "2026-11-29T00:00:00",
+  },
   date: {
     dayOfWeek: "S Á B A D O",
     dayNumber: "28",

@@ -22,11 +22,12 @@ export default function WaxSeal({ onClick, isOpening }) {
           {/* Subtle wax reflection */}
           <div className="absolute top-1 left-2 w-7 h-3 rounded-full bg-white/20 blur-[1px] transform -rotate-45 pointer-events-none" />
 
-          {/* Central 50 Años Emblem */}
+          {/* Central 50 Años Emblem con carga suave */}
           <img
-            src="/assets/icono50anos.png"
+            src="/assets/icono50anos-opt.png"
             alt="50 Años Nemer"
-            className="w-10 h-10 sm:w-12 sm:h-12 object-contain filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] pointer-events-none brightness-110"
+            loading="eager"
+            className="w-10 h-10 sm:w-12 sm:h-12 object-contain filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] pointer-events-none brightness-110 animate-fadeIn"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}

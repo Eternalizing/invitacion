@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { eventData } from '../../data/eventData';
 import { useTheme } from '../../context/ThemeContext';
+import SmoothImage from '../common/SmoothImage';
 
-export default function EnvelopeModal({ guestName, onOpen, onOpenStart, onOpenComplete }) {
+export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenStart, onOpenComplete }) {
   const { isLight } = useTheme();
 
   // Secuencia elegante de revelación de logos:
@@ -145,10 +146,11 @@ export default function EnvelopeModal({ guestName, onOpen, onOpenStart, onOpenCo
             onClick={handleOpen}
             className="relative w-full aspect-[1024/524] max-w-[580px] cursor-pointer group transition-all duration-500 hover:scale-[1.025] bg-transparent border-0"
           >
-            {/* Imagen de alta fidelidad del sobre con silueta natural */}
-            <img
+            {/* Imagen de alta fidelidad del sobre con silueta natural y carga suave */}
+            <SmoothImage
               src={eventData.logos.envelopeImage}
               alt="Sobre de Invitación 50 Años"
+              loading="eager"
               className="w-full h-full object-contain filter drop-shadow-[0_20px_45px_rgba(0,0,0,0.85)] transition-transform duration-700 group-hover:scale-[1.01]"
             />
 
@@ -211,9 +213,10 @@ export default function EnvelopeModal({ guestName, onOpen, onOpenStart, onOpenCo
                 : 'opacity-0 scale-95 translate-y-4'
             }`}
           >
-            <img
+            <SmoothImage
               src={eventData.logos.mainCompanyLogo}
               alt="Atef Nemer Grupo de Empresas"
+              loading="eager"
               className={`max-h-20 sm:max-h-24 md:max-h-28 w-auto max-w-full object-contain filter ${
                 isLight
                   ? 'drop-shadow-[0_4px_24px_rgba(221,185,103,0.45)]'
@@ -230,9 +233,10 @@ export default function EnvelopeModal({ guestName, onOpen, onOpenStart, onOpenCo
                 : 'opacity-0 scale-95 translate-y-6 pointer-events-none'
             }`}
           >
-            <img
+            <SmoothImage
               src={eventData.logos.logo50Anos}
               alt="50 Años de Trayectoria"
+              loading="eager"
               className={`max-h-16 sm:max-h-20 md:max-h-24 w-auto max-w-full object-contain filter ${
                 isLight
                   ? 'drop-shadow-[0_4px_20px_rgba(221,185,103,0.55)]'

@@ -1,10 +1,12 @@
 import React from 'react';
 import { eventData } from '../../data/eventData';
-import { Film, GlassWater, Utensils, Music, Moon } from 'lucide-react';
+import { Film, GlassWater, Utensils, Music, Moon, Church } from 'lucide-react';
 
 export default function Itinerary() {
   const getIcon = (type) => {
     switch (type) {
+      case 'church':
+        return <Church className="w-4 h-4 text-amber-400" />;
       case 'film':
         return <Film className="w-4 h-4 text-amber-400" />;
       case 'glass':
