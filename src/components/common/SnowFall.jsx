@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 
 /**
- * SnowFall: Efecto de nieve cayendo suavemente en Canvas a 60 FPS.
- * Incluye copos blancos cristalinos en distintas capas de profundidad y sutiles destellos dorados.
+ * SnowFall: Efecto de nieve cayendo a 60 FPS fluidos en móviles y escritorio.
+ * Sin shadowBlur en Canvas (que ralentiza GPUs móviles), usando halos suaves dibujados directo.
  */
 export default function SnowFall({ className = '', intensity = 'medium' }) {
   const canvasRef = useRef(null);
@@ -10,42 +10,44 @@ export default function SnowFall({ className = '', intensity = 'medium' }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 
     let animationFrameId;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
 
     const isMobile = width < 768;
     const count =
       intensity === 'dense'
         ? isMobile
-          ? 70
-          : 130
+          ? 48
+          : 105
         : intensity === 'light'
         ? isMobile
-          ? 35
-          : 60
+          ? 24
+          : 50
         : isMobile
-        ? 55
-        : 100;
+        ? 36
+        : 80;
 
     function createFlake(w, h, randomY = false) {
       const isGold = Math.random() < 0.08;
-      const radius = isGold ? Math.random() * 1.8 + 1.0 : Math.random() * 2.8 + 0.9;
+      const radius = isGold ? Math.random() * 1.6 + 1.0 : Math.random() * 2.4 + 0.9;
       return {
         x: Math.random() * w,
-        y: randomY ? Math.random() * h : -10 - Math.random() * 25,
+        y: randomY ? Math.random() * h : -10 - Math.random() * 20,
         radius,
-        speed: (radius / 2.8) * 0.75 + 0.4,
-        windDrift: Math.random() * 0.4 - 0.15,
+        speed: (radius / 2.4) * 38 + 22, // px por segundo (consistente en 60Hz y 120Hz)
+        windDrift: Math.random() * 14 - 4,
         swayAngle: Math.random() * Math.PI * 2,
-        swaySpeed: Math.random() * 0.018 + 0.008,
-        opacity: Math.random() * 0.55 + 0.35,
+        swaySpeed: Math.random() * 1.1 + 0.5,
+        opacity: Math.random() * 0.5 + 0.35,
         isGold,
       };
     }
@@ -53,33 +55,42 @@ export default function SnowFall({ className = '', intensity = 'medium' }) {
     const flakes = Array.from({ length: count }, () => createFlake(width, height, true));
 
     const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
     };
     window.addEventListener('resize', handleResize);
 
-    const render = () => {
+    let lastTime = performance.now();
+
+    const render = (now) => {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
       ctx.clearRect(0, 0, width, height);
 
       for (let i = 0; i < flakes.length; i++) {
         const f = flakes[i];
-        f.swayAngle += f.swaySpeed;
-        f.x += Math.sin(f.swayAngle) * 0.65 + f.windDrift;
-        f.y += f.speed;
+        f.swayAngle += f.swaySpeed * dt;
+        f.x += (Math.sin(f.swayAngle) * 18 + f.windDrift) * dt;
+        f.y += f.speed * dt;
+
+        // Halo suave opcional sin shadowBlur (0 penalización en GPU móvil)
+        if (f.radius > 2.0 || f.isGold) {
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.radius * 1.85, 0, Math.PI * 2);
+          ctx.fillStyle = f.isGold
+            ? `rgba(221, 185, 103, ${f.opacity * 0.22})`
+            : `rgba(255, 255, 255, ${f.opacity * 0.16})`;
+          ctx.fill();
+        }
 
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
-
-        if (f.isGold) {
-          ctx.fillStyle = `rgba(255, 224, 130, ${f.opacity})`;
-          ctx.shadowColor = 'rgba(221, 185, 103, 0.6)';
-          ctx.shadowBlur = 6;
-        } else {
-          ctx.fillStyle = `rgba(255, 255, 255, ${f.opacity})`;
-          ctx.shadowColor = 'rgba(255, 255, 255, 0.45)';
-          ctx.shadowBlur = f.radius > 2 ? 5 : 2;
-        }
-
+        ctx.fillStyle = f.isGold
+          ? `rgba(255, 224, 130, ${f.opacity})`
+          : `rgba(255, 255, 255, ${f.opacity})`;
         ctx.fill();
 
         if (f.y > height + 12 || f.x < -20 || f.x > width + 20) {
@@ -90,12 +101,13 @@ export default function SnowFall({ className = '', intensity = 'medium' }) {
       animationFrameId = requestAnimationFrame(render);
     };
 
-    render();
+    animationFrameId = requestAnimationFrame(render);
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
         cancelAnimationFrame(animationFrameId);
       } else {
+        lastTime = performance.now();
         animationFrameId = requestAnimationFrame(render);
       }
     };

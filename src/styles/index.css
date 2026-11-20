@@ -180,21 +180,21 @@
 /* Infinite Continuous Marquee animations for background photos (Zero gaps, continuous loop) */
 @keyframes marqueeLeft {
   0% {
-    transform: translateX(0%);
+    transform: translate3d(0%, 0, 0);
   }
 
   100% {
-    transform: translateX(-100%);
+    transform: translate3d(-100%, 0, 0);
   }
 }
 
 @keyframes marqueeRight {
   0% {
-    transform: translateX(-100%);
+    transform: translate3d(-100%, 0, 0);
   }
 
   100% {
-    transform: translateX(0%);
+    transform: translate3d(0%, 0, 0);
   }
 }
 
@@ -412,59 +412,50 @@ html.theme-light .text-gold-shine {
 }
 
 /* =====================================================================
-   REVELADO CINEMÁTICO AL HACER SCROLL (Cinematic Float & Dynamic Glow)
+   REVELADO FLUIDO AL HACER SCROLL (Solo GPU: opacity + transform, 60 FPS en móvil)
    ===================================================================== */
 .reveal {
   opacity: 0;
-  transform: translateY(38px) scale(0.965);
-  filter: blur(6px);
+  transform: translate3d(0, 22px, 0) scale(0.985);
   transition:
-    opacity 1.05s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 1.05s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform, filter;
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
 }
 
 .reveal.is-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
-  filter: blur(0px);
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 /* Variante suave para encabezados y textos sutiles */
 .reveal-soft {
   opacity: 0;
-  transform: translateY(22px) scale(0.985);
-  filter: blur(4px);
+  transform: translate3d(0, 14px, 0);
   transition:
-    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform, filter;
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
 }
 
 .reveal-soft.is-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
-  filter: blur(0px);
+  transform: translate3d(0, 0, 0);
 }
 
 /* Variante de escala para tarjetas destacadas */
 .reveal-scale {
   opacity: 0;
-  transform: scale(0.93);
-  filter: blur(8px);
+  transform: scale(0.96);
   transition:
-    opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 1s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform, filter;
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
 }
 
 .reveal-scale.is-visible {
   opacity: 1;
   transform: scale(1);
-  filter: blur(0px);
 }
 
 /* =====================================================================

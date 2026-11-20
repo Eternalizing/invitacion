@@ -10,6 +10,7 @@ import CascadeTimeline from './components/invitation/CascadeTimeline';
 import GlowingCard from './components/common/GlowingCard';
 import SmoothImage from './components/common/SmoothImage';
 import SnowFall from './components/common/SnowFall';
+import AudioPlayer from './components/invitation/AudioPlayer';
 import FallbackHome from './components/common/FallbackHome';
 import PublicHome from './components/home/PublicHome';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -40,6 +41,7 @@ function InvitationContent({
   const [isConfirming, setIsConfirming] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
   const inPageCountdownRef = useRef(null);
+  const audioPlayerRef = useRef(null);
 
   const [attendanceStatus, setAttendanceStatus] = useState(() =>
     guest?.id ? getGuestStatus(guest.id) : GUEST_STATUS.PENDING
@@ -159,6 +161,14 @@ function InvitationContent({
       {/* Nieve cayendo suavemente en modo Navidad */}
       {isChristmas && <SnowFall intensity="medium" />}
 
+      {/* Música en bucle (Gala o Navidad): inicia al presionar la carta, botón oculto durante carta y loader */}
+      <AudioPlayer
+        ref={audioPlayerRef}
+        isChristmas={isChristmas}
+        src={isChristmas ? '/assets/navidad/musica-navidad.mp3' : '/assets/musica-gala.mp3'}
+        showButton={isOpen && !isEnvelopeMounted}
+      />
+
       {/* 0. CARRUSEL INFINITO DE FOTOS EN EL FONDO (Navideñas o Históricas) */}
       <BackgroundCarousel isChristmas={isChristmas} />
 
@@ -168,6 +178,7 @@ function InvitationContent({
           guestName={guestName}
           passes={passes}
           isChristmas={isChristmas}
+          onPress={() => audioPlayerRef.current?.start()}
           onOpenStart={() => setIsOpen(true)}
           onOpenComplete={() => setIsEnvelopeMounted(false)}
           onOpen={() => {
@@ -198,33 +209,17 @@ function InvitationContent({
           isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* Iluminación Ambiental */}
+        {/* Iluminación Ambiental (radial-gradient puro, cero blur pesado en móviles) */}
         <div
-          className={`absolute top-0 left-1/2 -translate-x-1/2 w-[650px] h-[450px] rounded-full blur-[70px] sm:blur-[150px] pointer-events-none transition-all duration-700 ${
-            isChristmas
-              ? 'bg-[#D42426]/15'
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: isChristmas
+              ? 'radial-gradient(circle at 50% 10%, rgba(212,36,38,0.12) 0%, transparent 45%), radial-gradient(circle at 85% 32%, rgba(201,163,78,0.10) 0%, transparent 38%), radial-gradient(circle at 12% 55%, rgba(16,185,129,0.12) 0%, transparent 42%)'
               : isLight
-              ? 'bg-[#DDB967]/15'
-              : 'bg-[#C9A34E]/10'
-          }`}
-        />
-        <div
-          className={`absolute top-1/4 right-0 w-80 h-80 rounded-full blur-[60px] sm:blur-[130px] pointer-events-none transition-all duration-700 ${
-            isChristmas
-              ? 'bg-[#C9A34E]/12'
-              : isLight
-              ? 'bg-[#DDB967]/10'
-              : 'bg-[#C9A34E]/8'
-          }`}
-        />
-        <div
-          className={`absolute top-1/2 -left-20 w-96 h-96 rounded-full blur-[65px] sm:blur-[140px] pointer-events-none transition-all duration-700 ${
-            isChristmas
-              ? 'bg-emerald-900/20'
-              : isLight
-              ? 'bg-[#706044]/25'
-              : 'bg-[#51432A]/20'
-          }`}
+              ? 'radial-gradient(circle at 50% 10%, rgba(221,185,103,0.14) 0%, transparent 45%), radial-gradient(circle at 85% 32%, rgba(221,185,103,0.08) 0%, transparent 38%), radial-gradient(circle at 12% 55%, rgba(112,96,68,0.16) 0%, transparent 42%)'
+              : 'radial-gradient(circle at 50% 10%, rgba(201,163,78,0.10) 0%, transparent 45%), radial-gradient(circle at 85% 32%, rgba(201,163,78,0.07) 0%, transparent 38%), radial-gradient(circle at 12% 55%, rgba(81,67,42,0.14) 0%, transparent 42%)',
+          }}
         />
 
         {/* Contenedor Principal Centrado */}

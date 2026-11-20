@@ -241,10 +241,10 @@ export default function Countdown({ isChristmas = false }) {
             isChristmas ? (
               <div
                 key={idx}
-                className="relative p-[2.5px] rounded-2xl overflow-hidden shadow-[0_6px_18px_rgba(212,36,38,0.35)] animate-candy-stripe"
+                className="relative p-[2.5px] rounded-2xl overflow-hidden shadow-[0_4px_12px_rgba(212,36,38,0.3)] sm:animate-candy-stripe"
                 style={candyStripeStyle}
               >
-                <div className="bg-[#180709]/95 rounded-[calc(1rem-2.5px)] p-2 sm:p-3 flex flex-col items-center justify-center h-full shadow-inner">
+                <div className="bg-[#180709] rounded-[calc(1rem-2.5px)] p-2 sm:p-3 flex flex-col items-center justify-center h-full shadow-inner">
                   <span className="font-serif text-2xl sm:text-3xl font-bold text-white drop-shadow-[0_2px_10px_rgba(255,77,79,0.65)]">
                     {String(block.value).padStart(2, '0')}
                   </span>
@@ -318,15 +318,15 @@ export function FloatingCountdown({
       <div
         className={`rounded-full ${
           isChristmas
-            ? 'p-[2.5px] shadow-[0_12px_35px_rgba(212,36,38,0.45)] animate-candy-stripe'
+            ? 'p-[2.5px] shadow-[0_8px_24px_rgba(212,36,38,0.4)] sm:animate-candy-stripe'
             : ''
         }`}
         style={isChristmas ? candyStripeStyle : undefined}
       >
         <div
-          className={`inline-flex items-center gap-2.5 sm:gap-4 px-4 py-2 sm:px-6 sm:py-3 rounded-full transition-all duration-500 backdrop-blur-md ${
+          className={`inline-flex items-center gap-2.5 sm:gap-4 px-4 py-2 sm:px-6 sm:py-3 rounded-full transition-all duration-500 ${
             isChristmas
-              ? 'bg-[#180709]/95 text-white'
+              ? 'bg-[#180709] text-white'
               : isLight
               ? 'bg-[#33312C]/95 border-2 border-[#706044] shadow-[0_12px_35px_rgba(0,0,0,0.7)]'
               : 'bg-[#151515]/95 border-2 border-[#51432A] shadow-[0_12px_35px_rgba(0,0,0,0.9)]'

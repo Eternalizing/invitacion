@@ -1,56 +1,148 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 
-export default function AudioPlayer() {
+const AudioPlayer = forwardRef(function AudioPlayer(
+  { src = '/assets/musica-gala.mp3', isChristmas = false, showButton = true },
+  ref
+) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef(null);
+  const userSilencedRef = useRef(false);
+  const hasStartedRef = useRef(false);
 
-  const togglePlay = () => {
-    if (!audioRef.current) return;
+  const targetVolume = isChristmas ? 0.4 : 0.6;
 
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
+  const startPlayback = () => {
+    const audio = audioRef.current;
+    if (!audio || userSilencedRef.current) return;
+
+    audio.muted = false;
+    audio.volume = targetVolume;
+    audio.loop = true;
+
+    if (!audio.paused) {
+      hasStartedRef.current = true;
+      setIsPlaying(true);
+      setIsMuted(false);
+      return;
+    }
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
+        .then(() => {
+          hasStartedRef.current = true;
+          setIsPlaying(true);
+          setIsMuted(false);
+        })
+        .catch(() => {
+          setIsPlaying(false);
+        });
     } else {
-      audioRef.current.play().then(() => {
-        setIsPlaying(true);
-      }).catch(err => {
-        console.warn("Audio autoplay blocked by browser policy:", err);
-      });
+      hasStartedRef.current = true;
+      setIsPlaying(true);
+      setIsMuted(false);
     }
   };
 
-  return (
-    <div className="fixed bottom-5 right-5 z-40">
-      <audio
-        ref={audioRef}
-        loop
-        src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-112199.mp3"
-      />
+  useImperativeHandle(ref, () => ({
+    start: startPlayback,
+  }));
 
-      {/* SOLID COLOR BUTTON */}
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = targetVolume;
+    audio.loop = true;
+
+    const onPlay = () => {
+      hasStartedRef.current = true;
+      setIsPlaying(true);
+    };
+    const onPause = () => {
+      setIsPlaying(false);
+    };
+
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
+
+    // Pausar si la pestaña se oculta y reanudar al volver (si ya había iniciado y no fue silenciada)
+    const handleVisibility = () => {
+      if (!audioRef.current) return;
+      if (document.hidden) {
+        audioRef.current.pause();
+      } else if (hasStartedRef.current && !userSilencedRef.current) {
+        audioRef.current.play().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      audio.pause();
+    };
+  }, [src, targetVolume]);
+
+  const toggleMute = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (!audio.paused && !isMuted) {
+      userSilencedRef.current = true;
+      audio.pause();
+      setIsPlaying(false);
+      setIsMuted(true);
+    } else {
+      userSilencedRef.current = false;
+      startPlayback();
+    }
+  };
+
+  const soundEnabled = !isMuted;
+
+  return (
+    <div
+      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[60] select-none transition-all duration-500 ${
+        showButton ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-90 pointer-events-none'
+      }`}
+      aria-hidden={!showButton}
+    >
+      <audio ref={audioRef} loop playsInline preload="auto" src={src} />
+
       <button
-        onClick={togglePlay}
+        onClick={toggleMute}
         type="button"
-        aria-label="Reproducir o pausar música de fondo"
-        className={`flex items-center gap-2 px-3.5 py-2.5 rounded-full shadow-2xl transition-all cursor-pointer ${
-          isPlaying
-            ? 'bg-[#d4af37] text-stone-950 font-black border-2 border-[#fff0a8] shadow-[0_4px_18px_rgba(212,175,55,0.5)]'
-            : 'bg-[#1b1d28] text-stone-300 font-bold border border-stone-700 hover:bg-[#252837]'
+        tabIndex={showButton ? 0 : -1}
+        aria-label={
+          soundEnabled
+            ? isChristmas
+              ? 'Silenciar música navideña'
+              : 'Silenciar música de gala'
+            : isChristmas
+            ? 'Activar música navideña'
+            : 'Activar música de gala'
+        }
+        title={soundEnabled ? 'Silenciar música' : 'Activar música'}
+        className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-[0_8px_25px_rgba(0,0,0,0.65)] transition-all duration-300 active:scale-90 cursor-pointer border ${
+          soundEnabled
+            ? isChristmas
+              ? 'bg-gradient-to-br from-[#D42426] via-[#B91C1C] to-[#7F1D1D] text-white border-[#FFF0CD]/70 shadow-[0_6px_22px_rgba(212,36,38,0.5)]'
+              : 'bg-gradient-to-br from-[#F0DDA7] via-[#C9A34E] to-[#9E7B2F] text-[#17120A] border-[#FFF0CD]/80 shadow-[0_6px_22px_rgba(201,163,78,0.5)]'
+            : 'bg-[#18181B]/95 text-[#C9C2B4] border-[#51432A] hover:border-[#DDB967] hover:text-[#FFF0CD]'
         }`}
       >
-        {isPlaying ? (
-          <>
-            <Volume2 className="w-4 h-4 text-stone-950 stroke-[2.5] animate-pulse shrink-0" />
-            <span className="text-xs font-montserrat tracking-wide whitespace-nowrap">Música ON</span>
-          </>
+        {soundEnabled ? (
+          <Volume2 className={`w-5 h-5 shrink-0 ${isPlaying ? 'animate-pulse' : ''}`} />
         ) : (
-          <>
-            <VolumeX className="w-4 h-4 text-stone-400 shrink-0" />
-            <span className="text-xs font-montserrat tracking-wide whitespace-nowrap">Música OFF</span>
-          </>
+          <VolumeX className="w-5 h-5 shrink-0" />
         )}
       </button>
     </div>
   );
-}
+});
+
+export default AudioPlayer;
