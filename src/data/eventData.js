@@ -128,7 +128,7 @@ export const christmasEventData = {
       time: "9:00 p. m.",
       title: "Cena Navideña",
       icon: "cena",
-      details: ["Celebración especial navideña junto a la familia Grupo Nemer"],
+      details: [],
     },
     {
       time: "12:00 a. m.",
