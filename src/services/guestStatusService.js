@@ -1,5 +1,10 @@
 const STORAGE_KEY = 'nemer_invitaciones_status_v1';
 const SYNC_ENDPOINT = 'https://kvdb.io/8xW4nL9pZ2tM7qYbK3vRc1/nemer50_guest_statuses';
+export const PRODUCTION_BASE_URL = 'https://invitacion-mauve-nu.vercel.app';
+
+export function getGuestInvitationUrl(guestId) {
+  return `${PRODUCTION_BASE_URL}/?id=${encodeURIComponent(String(guestId || '').trim())}`;
+}
 
 export const GUEST_STATUS = {
   PENDING: 'pendiente',
@@ -74,6 +79,8 @@ export function getAllGuestsWithStatus() {
       passes: Number(item.passes) || 1,
       empresa: item.empresa || '',
       cargo: item.cargo || '',
+      telefono: item.telefono || '',
+      type: item.type || 'navidad',
       status: statusData.status || GUEST_STATUS.PENDING,
       confirmedAt: statusData.confirmedAt || null,
       note: statusData.note || '',
@@ -230,10 +237,6 @@ export function subscribeToGuestStatus(listener) {
  */
 export function exportToCSV() {
   const guests = getAllGuestsWithStatus();
-  const origin =
-    typeof window !== 'undefined'
-      ? window.location.origin || `${window.location.protocol}//${window.location.host}`
-      : '';
   const headers = ['ID', 'Nombre', 'Empresa', 'Cargo', 'Pases', 'Estado', 'Fecha_Confirmacion', 'Link_Invitacion'];
 
   const rows = guests.map((g) => [
@@ -244,7 +247,7 @@ export function exportToCSV() {
     g.passes,
     `"${g.status.toUpperCase()}"`,
     `"${g.confirmedAt || ''}"`,
-    `"${origin}/?id=${encodeURIComponent(g.id)}"`,
+    `"${getGuestInvitationUrl(g.id)}"`,
   ]);
 
   const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');

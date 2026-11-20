@@ -5,6 +5,7 @@ const GUEST_PEPPER = 'nemer50_gala_inv_v1_2026';
 // Hashes SHA-256 de los códigos secretos (nunca en texto plano en el código fuente)
 const SECRET_PORTAL_HASH = '786778b2e5c2856340e72c5c25bbcb5dac4bfd5ae7d5dd9589600dabb241841e';
 const SECRET_DASHBOARD_HASH = '7fc103a647f5b7599540cfc4f91e9e577dbf78479f71624e064a60da0db5356f';
+const SECRET_WHATSAPP_HASH = '0032397c8aad940ecb96f989b6fa2bff011883db86b8c8bee7fd374e51bd185f';
 
 export function isSecretPortalId(id) {
   if (!id || typeof id !== 'string') return false;
@@ -16,12 +17,17 @@ export function isSecretDashboardId(id) {
   return sha256Hex(id.trim()) === SECRET_DASHBOARD_HASH;
 }
 
+export function isSecretWhatsAppId(id) {
+  if (!id || typeof id !== 'string') return false;
+  return sha256Hex(id.trim()) === SECRET_WHATSAPP_HASH;
+}
+
 /**
  * Busca y descifra un invitado por su ID único desde su archivo cifrado individual.
  * Nunca expone datos de otros invitados ni información sensible (teléfono, empresa, cargo).
  *
  * @param {string} searchId - Código o ID del invitado
- * @returns {Promise<{ id: string, name: string, passes: number } | null>}
+ * @returns {Promise<{ id: string, name: string, passes: number, type: string } | null>}
  */
 export async function findGuestAsync(searchId) {
   if (!searchId || typeof searchId !== 'string') return null;
@@ -56,19 +62,24 @@ export async function findGuestAsync(searchId) {
 }
 
 /**
- * Carga y descifra la bóveda administrativa completa usando el código secreto del panel.
+ * Carga y descifra la bóveda administrativa o del panel de WhatsApp usando su código secreto.
  *
- * @param {string} adminKey - Código secreto de 15 dígitos del panel de control
- * @returns {Promise<Array<{ id: string, name: string, passes: number, empresa: string, cargo: string }> | null>}
+ * @param {string} adminKey - Código secreto de 15 dígitos
+ * @returns {Promise<Array<{ id: string, name: string, passes: number, empresa: string, cargo: string, type?: string }> | null>}
  */
 export async function loadAdminVaultAsync(adminKey) {
-  if (!adminKey || !isSecretDashboardId(adminKey)) return null;
+  const cleanKey = typeof adminKey === 'string' ? adminKey.trim() : '';
+  const isAdmin = isSecretDashboardId(cleanKey);
+  const isWa = isSecretWhatsAppId(cleanKey);
+
+  if (!cleanKey || (!isAdmin && !isWa)) return null;
 
   try {
-    const res = await fetch('/data/vault.bin.json', { cache: 'no-store' });
+    const vaultUrl = isWa ? '/data/vault-wa.bin.json' : '/data/vault.bin.json';
+    const res = await fetch(vaultUrl, { cache: 'no-store' });
     if (!res.ok) return null;
     const envelope = await res.json();
-    const decoded = decryptJson(envelope, adminKey.trim());
+    const decoded = decryptJson(envelope, cleanKey);
     return Array.isArray(decoded) ? decoded : null;
   } catch {
     return null;

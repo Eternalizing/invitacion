@@ -14,6 +14,7 @@ import AudioPlayer from './components/invitation/AudioPlayer';
 import FallbackHome from './components/common/FallbackHome';
 import PublicHome from './components/home/PublicHome';
 import AdminDashboard from './components/admin/AdminDashboard';
+import WhatsAppPanel from './components/admin/WhatsAppPanel';
 import confetti from 'canvas-confetti';
 import {
   getGuestStatus,
@@ -701,6 +702,7 @@ export default function App() {
     isChristmas,
     isSecretPortal,
     isAdminDashboard,
+    isWhatsAppPanel,
     adminKey,
     attemptedId,
     isLoading,
@@ -711,6 +713,8 @@ export default function App() {
     <ThemeProvider>
       {isLoading ? (
         <div className="min-h-screen w-full bg-[#080808]" />
+      ) : isWhatsAppPanel ? (
+        <WhatsAppPanel adminKey={adminKey} />
       ) : isAdminDashboard ? (
         <AdminDashboard adminKey={adminKey} />
       ) : isValid && guest ? (
