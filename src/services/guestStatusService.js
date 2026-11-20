@@ -196,10 +196,11 @@ async function pushGuestToCloud(guestKey, payload) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      keepalive: true,
     });
-    return res.ok;
+    return { ok: res.ok, needsActivation: res.status === 403 };
   } catch {
-    return false;
+    return { ok: false, needsActivation: false };
   }
 }
 
@@ -210,33 +211,50 @@ async function deleteGuestFromCloud(guestKey) {
   try {
     const res = await fetch(`${KVDB_BUCKET_URL}/${KEY_PREFIX}${encodeURIComponent(guestKey)}`, {
       method: 'DELETE',
+      keepalive: true,
     });
-    return res.ok;
+    return { ok: res.ok, needsActivation: res.status === 403 };
   } catch {
-    return false;
+    return { ok: false, needsActivation: false };
   }
 }
 
 /**
- * Sincroniza el estado de un único invitado desde la nube
+ * Sincroniza el estado de un único invitado desde la nube y sube confirmaciones locales previas si faltaban
  */
 export async function syncSingleGuestFromCloud(guestId) {
   if (!guestId) return null;
   const key = String(guestId).trim().toUpperCase();
+  const statuses = getStoredStatuses();
+  const localEntry = statuses[key];
+
   try {
     const res = await fetch(`${KVDB_BUCKET_URL}/${KEY_PREFIX}${encodeURIComponent(key)}`, {
       method: 'GET',
       cache: 'no-store',
     });
+
     if (res.status === 404) {
+      if (localEntry && localEntry.status && localEntry.status !== GUEST_STATUS.PENDING) {
+        await pushGuestToCloud(key, localEntry);
+        return localEntry.status;
+      }
       return null;
     }
+
     if (res.ok) {
       const text = await res.text();
-      if (!text) return null;
-      const parsed = JSON.parse(text);
+      const parsed = text ? JSON.parse(text) : null;
+
       if (parsed && parsed.status) {
-        const statuses = getStoredStatuses();
+        const remoteTs = Date.parse(parsed.timestamp || '') || 0;
+        const localTs = Date.parse(localEntry?.timestamp || '') || 0;
+
+        if (localEntry && localEntry.status !== GUEST_STATUS.PENDING && localTs > remoteTs) {
+          await pushGuestToCloud(key, localEntry);
+          return localEntry.status;
+        }
+
         statuses[key] = parsed;
         saveStoredStatuses(statuses);
         return parsed.status;
@@ -249,7 +267,7 @@ export async function syncSingleGuestFromCloud(guestId) {
 }
 
 /**
- * Trae los últimos estados individuales desde la nube y los combina por fecha más reciente
+ * Trae todos los estados individuales desde la nube, sube confirmaciones locales pendientes y combina por fecha más reciente
  */
 export async function syncWithCloud() {
   try {
@@ -288,6 +306,7 @@ export async function syncWithCloud() {
 
         const localData = getStoredStatuses();
         const merged = { ...localData };
+        const toUpload = [];
 
         Object.entries(remoteMap).forEach(([k, remoteVal]) => {
           const localVal = merged[k];
@@ -298,18 +317,44 @@ export async function syncWithCloud() {
             const localTs = Date.parse(localVal.timestamp || '') || 0;
             if (remoteTs >= localTs) {
               merged[k] = remoteVal;
+            } else if (localVal.status && localVal.status !== GUEST_STATUS.PENDING) {
+              toUpload.push([k, localVal]);
             }
           }
         });
 
+        Object.entries(localData).forEach(([k, localVal]) => {
+          if (!remoteMap[k] && localVal && localVal.status && localVal.status !== GUEST_STATUS.PENDING) {
+            toUpload.push([k, localVal]);
+          }
+        });
+
+        let needsActivation = false;
+        if (toUpload.length > 0) {
+          const results = await Promise.all(toUpload.map(([k, val]) => pushGuestToCloud(k, val)));
+          needsActivation = results.some((r) => r.needsActivation);
+        } else if (Object.keys(remoteMap).length === 0) {
+          const probe = await fetch(`${KVDB_BUCKET_URL}/_health`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ok: true }),
+          }).catch(() => null);
+          if (probe && probe.status === 403) {
+            needsActivation = true;
+          }
+        }
+
         saveStoredStatuses(merged);
-        return { success: true, count: Object.keys(merged).length };
+        if (needsActivation) {
+          return { success: false, needsActivation: true, count: Object.keys(merged).length };
+        }
+        return { success: true, needsActivation: false, count: Object.keys(merged).length };
       }
     }
   } catch {
     // Si no hay red, continuar con datos locales
   }
-  return { success: false, count: 0 };
+  return { success: false, needsActivation: false, count: 0 };
 }
 
 if (typeof window !== 'undefined') {

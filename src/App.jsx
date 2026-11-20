@@ -352,6 +352,7 @@ function InvitationContent({
               disabled={isConfirming}
               onClick={() => {
                 if (attendanceStatus === GUEST_STATUS.CONFIRMED) {
+                  syncSingleGuestFromCloud(guest.id);
                   setIsConfirmDialogOpen(true);
                 } else {
                   handleConfirm();

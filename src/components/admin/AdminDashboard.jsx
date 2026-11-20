@@ -43,6 +43,7 @@ export default function AdminDashboard({ adminKey = '' }) {
   const [vaultError, setVaultError] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [lastSyncText, setLastSyncText] = useState('Local');
+  const [needsCloudActivation, setNeedsCloudActivation] = useState(false);
 
   // Descifrar bóveda en memoria al abrir y suscribir a cambios reactivos
   useEffect(() => {
@@ -105,9 +106,13 @@ export default function AdminDashboard({ adminKey = '' }) {
     const res = await syncWithCloud();
     if (!isSilent) setIsSyncing(false);
     if (res.success) {
+      setNeedsCloudActivation(false);
       setLastSyncText(
         `Sincronizado (${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })})`
       );
+    } else if (res.needsActivation) {
+      setNeedsCloudActivation(true);
+      setLastSyncText('Activar Nube');
     } else if (!isSilent) {
       setLastSyncText('Modo Local');
     }
@@ -296,6 +301,23 @@ export default function AdminDashboard({ adminKey = '' }) {
             </button>
           </div>
         </header>
+
+        {needsCloudActivation && (
+          <div className="mb-5 p-3.5 rounded-2xl border border-amber-500/60 bg-amber-950/35 text-amber-200 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span>
+              <strong>Falta activar la nube para recibir confirmaciones desde celulares:</strong> entra en KVdb con{' '}
+              <span className="font-mono underline">contactarstivent@gmail.com</span> y confirma el correo.
+            </span>
+            <a
+              href="https://kvdb.io/login"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-amber-400 text-[#17120A] font-bold text-xs hover:bg-amber-300 transition-colors"
+            >
+              Activar en kvdb.io/login
+            </a>
+          </div>
+        )}
 
         {isDecrypting ? (
           <div className="py-24 text-center flex flex-col items-center gap-3 opacity-80">
