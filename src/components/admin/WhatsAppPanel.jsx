@@ -195,7 +195,7 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
       }
       try {
         localStorage.setItem(SENT_STORAGE_KEY, JSON.stringify(next));
-      } catch { }
+      } catch {}
       return next;
     });
   };
@@ -226,7 +226,7 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
       const next = { ...prev, [guestId]: clean };
       try {
         localStorage.setItem(PHONE_OVERRIDE_KEY, JSON.stringify(next));
-      } catch { }
+      } catch {}
       return next;
     });
     setEditingPhoneId(null);
@@ -248,7 +248,7 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
       try {
         await navigator.clipboard.writeText(text);
         copied = true;
-      } catch { }
+      } catch {}
     }
 
     if (!copied) {
@@ -268,7 +268,7 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
         textArea.setSelectionRange(0, text.length);
         copied = document.execCommand('copy');
         document.body.removeChild(textArea);
-      } catch { }
+      } catch {}
     }
 
     setCopiedActionId(actionKey);
@@ -315,10 +315,11 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
 
   return (
     <div
-      className={`min-h-screen w-full p-4 pb-20 sm:p-6 md:p-8 font-montserrat select-none transition-colors duration-500 ${isLight
-        ? 'bg-[#242320] text-[#FAF6ED] selection:bg-[#DDB967] selection:text-[#211A0E]'
-        : 'bg-[#080808] text-[#F5F2EA] selection:bg-[#C9A34E] selection:text-[#17120A]'
-        }`}
+      className={`min-h-screen w-full p-4 pb-20 sm:p-6 md:p-8 font-montserrat select-none transition-colors duration-500 ${
+        isLight
+          ? 'bg-[#242320] text-[#FAF6ED] selection:bg-[#DDB967] selection:text-[#211A0E]'
+          : 'bg-[#080808] text-[#F5F2EA] selection:bg-[#C9A34E] selection:text-[#17120A]'
+      }`}
     >
       <div className="max-w-7xl mx-auto relative z-10">
         {/* 1. Header */}
@@ -348,10 +349,11 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
               <button
                 type="button"
                 onClick={onSwitchToAdmin}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${isLight
-                  ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] hover:bg-[#403C34]'
-                  : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] hover:bg-[#202020]'
-                  }`}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${
+                  isLight
+                    ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] hover:bg-[#403C34]'
+                    : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] hover:bg-[#202020]'
+                }`}
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Volver a Asistencia</span>
@@ -361,12 +363,13 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
             <button
               type="button"
               onClick={() => setShowTemplateEditor((v) => !v)}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${showTemplateEditor
-                ? 'bg-[#C9A34E] text-[#17120A] border-[#FFF0CD]/50'
-                : isLight
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${
+                showTemplateEditor
+                  ? 'bg-[#C9A34E] text-[#17120A] border-[#FFF0CD]/50'
+                  : isLight
                   ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED]'
                   : 'bg-[#151515] border-[#51432A] text-[#F5F2EA]'
-                }`}
+              }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
               <span>{showTemplateEditor ? 'Ocultar Plantillas' : 'Editar Mensajes'}</span>
@@ -388,8 +391,9 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
             {/* Editor opcional de plantillas (Navidad y Gala) */}
             {showTemplateEditor && (
               <div
-                className={`p-4 sm:p-5 rounded-2xl border mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4 ${isLight ? 'bg-[#33312C]/90 border-[#706044]' : 'bg-[#151515]/90 border-[#51432A]'
-                  }`}
+                className={`p-4 sm:p-5 rounded-2xl border mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4 ${
+                  isLight ? 'bg-[#33312C]/90 border-[#706044]' : 'bg-[#151515]/90 border-[#51432A]'
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -475,10 +479,11 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Buscar por nombre, ID, teléfono, empresa o cargo..."
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm border outline-none ${isLight
-                      ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED]'
-                      : 'bg-[#151515] border-[#51432A] text-[#F5F2EA]'
-                      }`}
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm border outline-none ${
+                      isLight
+                        ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED]'
+                        : 'bg-[#151515] border-[#51432A] text-[#F5F2EA]'
+                    }`}
                   />
                 </div>
 
@@ -487,10 +492,11 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                   <select
                     value={companyFilter}
                     onChange={(e) => setCompanyFilter(e.target.value)}
-                    className={`w-full sm:w-auto pl-8 pr-8 py-2.5 rounded-xl text-xs sm:text-sm border outline-none cursor-pointer ${isLight
-                      ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED]'
-                      : 'bg-[#151515] border-[#51432A] text-[#F5F2EA]'
-                      }`}
+                    className={`w-full sm:w-auto pl-8 pr-8 py-2.5 rounded-xl text-xs sm:text-sm border outline-none cursor-pointer ${
+                      isLight
+                        ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED]'
+                        : 'bg-[#151515] border-[#51432A] text-[#F5F2EA]'
+                    }`}
                   >
                     <option value="ALL">Todas las empresas ({companies.length})</option>
                     {companies.map((comp) => (
@@ -507,22 +513,25 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                 <div className="flex items-center gap-1 p-1 rounded-xl border bg-black/25 border-[#51432A]/40 text-xs">
                   <button
                     onClick={() => setTypeFilter('ALL')}
-                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${typeFilter === 'ALL' ? 'bg-[#C9A34E] text-[#17120A]' : 'opacity-70 hover:opacity-100'
-                      }`}
+                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${
+                      typeFilter === 'ALL' ? 'bg-[#C9A34E] text-[#17120A]' : 'opacity-70 hover:opacity-100'
+                    }`}
                   >
                     Todos
                   </button>
                   <button
                     onClick={() => setTypeFilter('navidad')}
-                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${typeFilter === 'navidad' ? 'bg-[#D42426] text-white' : 'opacity-70 hover:opacity-100'
-                      }`}
+                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${
+                      typeFilter === 'navidad' ? 'bg-[#D42426] text-white' : 'opacity-70 hover:opacity-100'
+                    }`}
                   >
                     Navidad ({stats.navidad})
                   </button>
                   <button
                     onClick={() => setTypeFilter('gala')}
-                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${typeFilter === 'gala' ? 'bg-amber-600 text-white' : 'opacity-70 hover:opacity-100'
-                      }`}
+                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${
+                      typeFilter === 'gala' ? 'bg-amber-600 text-white' : 'opacity-70 hover:opacity-100'
+                    }`}
                   >
                     Gala ({stats.gala})
                   </button>
@@ -532,22 +541,25 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                 <div className="flex items-center gap-1 p-1 rounded-xl border bg-black/25 border-[#51432A]/40 text-xs">
                   <button
                     onClick={() => setSentFilter('ALL')}
-                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${sentFilter === 'ALL' ? 'bg-white/20 text-white' : 'opacity-70 hover:opacity-100'
-                      }`}
+                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${
+                      sentFilter === 'ALL' ? 'bg-white/20 text-white' : 'opacity-70 hover:opacity-100'
+                    }`}
                   >
                     Todos
                   </button>
                   <button
                     onClick={() => setSentFilter('unsent')}
-                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${sentFilter === 'unsent' ? 'bg-amber-600 text-white' : 'opacity-70 hover:opacity-100'
-                      }`}
+                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${
+                      sentFilter === 'unsent' ? 'bg-amber-600 text-white' : 'opacity-70 hover:opacity-100'
+                    }`}
                   >
                     Sin enviar ({stats.unsent})
                   </button>
                   <button
                     onClick={() => setSentFilter('sent')}
-                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${sentFilter === 'sent' ? 'bg-emerald-600 text-white' : 'opacity-70 hover:opacity-100'
-                      }`}
+                    className={`px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer ${
+                      sentFilter === 'sent' ? 'bg-emerald-600 text-white' : 'opacity-70 hover:opacity-100'
+                    }`}
                   >
                     Enviados ({stats.sent})
                   </button>
@@ -579,32 +591,28 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                   return (
                     <div
                       key={guest.id}
-                      className={`rounded-2xl border p-4 flex flex-col gap-3 transition-all ${
+                      className={`rounded-2xl border p-4 flex flex-col gap-3 transition-colors ${
                         isSent
-                          ? 'bg-emerald-950/35 border-emerald-500/80 shadow-[0_0_24px_-6px_rgba(16,185,129,0.4)]'
+                          ? 'bg-emerald-950/15 border-emerald-500/40'
                           : isLight
                           ? 'bg-[#33312C]/90 border-[#706044]'
                           : 'bg-[#151515]/90 border-[#51432A]'
-                        }`}
+                      }`}
                     >
                       {/* Encabezado de tarjeta */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <div className="flex items-center flex-wrap gap-1.5 mb-1">
-                            <span
-                              className={`w-2 h-2 rounded-full shrink-0 ${
-                                isSent ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white/25'
-                              }`}
-                            />
                             <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-black/40 text-[#F0DDA7]">
                               {guest.id}
                             </span>
 
                             <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${isNavidad
-                                ? 'bg-[#D42426]/20 border-[#FF4D4F]/40 text-rose-200'
-                                : 'bg-amber-500/15 border-amber-400/40 text-[#F0DDA7]'
-                                }`}
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                                isNavidad
+                                  ? 'bg-[#D42426]/20 border-[#FF4D4F]/40 text-rose-200'
+                                  : 'bg-amber-500/15 border-amber-400/40 text-[#F0DDA7]'
+                              }`}
                             >
                               {isNavidad ? (
                                 <>
@@ -630,32 +638,23 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                           </p>
                         </div>
 
-                        <div className="shrink-0 flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => markSent(guest.id, true)}
-                            title={isSent ? `Enviado (${sentMap[guest.id]})` : 'Marcar como enviado'}
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border cursor-pointer transition-all ${
-                              isSent
-                                ? 'bg-emerald-500 text-[#052e16] border-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.5)]'
-                                : 'bg-black/30 border-white/15 opacity-75 hover:opacity-100 hover:border-emerald-400/60 hover:text-emerald-300'
-                            }`}
-                          >
-                            <Check className="w-3 h-3" />
-                            <span>{isSent ? `Enviado (${sentMap[guest.id]})` : 'Enviado'}</span>
-                          </button>
-
-                          {isSent && (
-                            <button
-                              type="button"
-                              onClick={() => markSent(guest.id, false)}
-                              title="Desmarcar (volver a pendiente)"
-                              className="p-1 rounded-full border border-emerald-500/40 bg-black/40 text-emerald-200/75 hover:text-rose-300 hover:border-rose-400/50 cursor-pointer transition-colors"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
+                        <button
+                          type="button"
+                          onClick={() => markSent(guest.id, !isSent)}
+                          className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border cursor-pointer transition-colors ${
+                            isSent
+                              ? 'bg-emerald-600 text-white border-emerald-400'
+                              : 'bg-black/30 border-white/15 opacity-70 hover:opacity-100'
+                          }`}
+                        >
+                          {isSent ? (
+                            <>
+                              <Check className="w-3 h-3" /> Enviado ({sentMap[guest.id]})
+                            </>
+                          ) : (
+                            <span>Marcar Enviado</span>
                           )}
-                        </div>
+                        </button>
                       </div>
 
                       {/* Teléfono directo para API WhatsApp */}
@@ -695,12 +694,13 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                           <>
                             <div className="flex items-center gap-2 min-w-0">
                               <Phone
-                                className={`w-3.5 h-3.5 shrink-0 ${phoneInfo.waPhone
-                                  ? phoneInfo.isIncomplete
-                                    ? 'text-amber-400'
-                                    : 'text-emerald-400'
-                                  : 'text-rose-400/70'
-                                  }`}
+                                className={`w-3.5 h-3.5 shrink-0 ${
+                                  phoneInfo.waPhone
+                                    ? phoneInfo.isIncomplete
+                                      ? 'text-amber-400'
+                                      : 'text-emerald-400'
+                                    : 'text-rose-400/70'
+                                }`}
                               />
                               {phoneInfo.waPhone ? (
                                 <span className="font-mono truncate">
@@ -756,33 +756,21 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => markSent(guest.id, true)}
-                          className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer ${
-                            isSent
-                              ? 'bg-emerald-500 hover:bg-emerald-400 text-[#052e16] ring-1 ring-emerald-300/60'
-                              : 'bg-[#25D366] hover:bg-[#22c35e] text-[#052e16]'
-                          }`}
+                          className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#25D366] hover:bg-[#22c35e] text-[#052e16] shadow-md active:scale-95 transition-all cursor-pointer"
                         >
-                          {isSent ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              <span>Enviado · Reenviar</span>
-                            </>
-                          ) : (
-                            <>
-                              <Send className="w-3.5 h-3.5" />
-                              <span>Enviar por WhatsApp</span>
-                            </>
-                          )}
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Enviar por WhatsApp</span>
                         </a>
 
                         {/* Copiar Mensaje Completo */}
                         <button
                           type="button"
                           onClick={() => copyTextUniversal(buildPersonalizedMessage(guest), msgKey)}
-                          className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${copiedActionId === msgKey
-                            ? 'bg-emerald-600 text-white border-emerald-400'
-                            : 'bg-black/35 border-[#51432A] hover:border-[#C9A34E]'
-                            }`}
+                          className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${
+                            copiedActionId === msgKey
+                              ? 'bg-emerald-600 text-white border-emerald-400'
+                              : 'bg-black/35 border-[#51432A] hover:border-[#C9A34E]'
+                          }`}
                         >
                           {copiedActionId === msgKey ? (
                             <>
@@ -801,10 +789,11 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                         <button
                           type="button"
                           onClick={() => copyTextUniversal(guestLink, linkKey)}
-                          className={`inline-flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${copiedActionId === linkKey
-                            ? 'bg-emerald-600 text-white border-emerald-400'
-                            : 'bg-black/35 border-white/10 hover:border-[#C9A34E]'
-                            }`}
+                          className={`inline-flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${
+                            copiedActionId === linkKey
+                              ? 'bg-emerald-600 text-white border-emerald-400'
+                              : 'bg-black/35 border-white/10 hover:border-[#C9A34E]'
+                          }`}
                         >
                           {copiedActionId === linkKey ? (
                             <>
@@ -824,17 +813,18 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                           type="button"
                           onClick={() => setPreviewGuestId(isPreviewOpen ? null : guest.id)}
                           title="Previsualizar mensaje"
-                          className={`p-2 rounded-xl border transition-colors cursor-pointer ${isPreviewOpen
-                            ? 'bg-[#C9A34E]/20 border-[#C9A34E] text-[#F0DDA7]'
-                            : 'bg-black/35 border-white/10 opacity-75 hover:opacity-100'
-                            }`}
+                          className={`p-2 rounded-xl border transition-colors cursor-pointer ${
+                            isPreviewOpen
+                              ? 'bg-[#C9A34E]/20 border-[#C9A34E] text-[#F0DDA7]'
+                              : 'bg-black/35 border-white/10 opacity-75 hover:opacity-100'
+                          }`}
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
 
                         {/* Abrir Invitación */}
                         <a
-                          href={`/?id=${encodeURIComponent(guest.id)}`}
+                          href={guestLink}
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Abrir invitación"
@@ -842,20 +832,6 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
-
-                        {/* Control rápido de enviado */}
-                        <button
-                          type="button"
-                          onClick={() => markSent(guest.id, !isSent)}
-                          title={isSent ? 'Enviado (clic para desmarcar)' : 'Marcar en verde como enviado'}
-                          className={`p-2 rounded-xl border transition-all active:scale-95 cursor-pointer ${
-                            isSent
-                              ? 'bg-emerald-500 text-[#052e16] border-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.5)]'
-                              : 'bg-black/35 border-white/10 opacity-75 hover:opacity-100 hover:border-emerald-400/60 hover:text-emerald-300'
-                          }`}
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
                       </div>
                     </div>
                   );

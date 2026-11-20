@@ -3,8 +3,10 @@ import { useTheme } from '../../context/ThemeContext';
 import { eventData } from '../../data/eventData';
 import { loadAdminVaultAsync } from '../../data/guests';
 import { FloatingCountdown } from '../invitation/Countdown';
+import WhatsAppPanel from './WhatsAppPanel';
 import {
   getAllGuestsWithStatus,
+  getGuestInvitationUrl,
   setAdminVaultGuests,
   setGuestStatus,
   subscribeToGuestStatus,
@@ -26,10 +28,12 @@ import {
   Check,
   Building2,
   Lock,
+  MessageCircle,
 } from 'lucide-react';
 
 export default function AdminDashboard({ adminKey = '' }) {
   const { isLight } = useTheme();
+  const [showWhatsAppPanel, setShowWhatsAppPanel] = useState(false);
   const [guests, setGuests] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL', 'pendiente', 'confirmado', 'declinado'
@@ -90,8 +94,7 @@ export default function AdminDashboard({ adminKey = '' }) {
   };
 
   const handleCopyLink = async (guestId) => {
-    const origin = window.location.origin || `${window.location.protocol}//${window.location.host}`;
-    const link = `${origin}/?id=${encodeURIComponent(guestId)}`;
+    const link = getGuestInvitationUrl(guestId);
     let copied = false;
 
     if (navigator.clipboard && window.isSecureContext) {
@@ -184,6 +187,15 @@ export default function AdminDashboard({ adminKey = '' }) {
     });
   }, [guests, searchQuery, statusFilter, companyFilter]);
 
+  if (showWhatsAppPanel) {
+    return (
+      <WhatsAppPanel
+        adminKey={adminKey}
+        onSwitchToAdmin={() => setShowWhatsAppPanel(false)}
+      />
+    );
+  }
+
   return (
     <div
       className={`min-h-screen w-full p-4 pb-24 sm:p-6 sm:pb-28 md:p-8 md:pb-28 font-montserrat select-none transition-colors duration-700 ${
@@ -233,6 +245,14 @@ export default function AdminDashboard({ adminKey = '' }) {
 
           {/* Botones de acción del Header */}
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
+            <button
+              onClick={() => setShowWhatsAppPanel(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 cursor-pointer bg-emerald-500/15 border-emerald-400/50 text-emerald-300 hover:bg-emerald-500/25"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>Envío WhatsApp</span>
+            </button>
+
             <button
               onClick={handleSync}
               disabled={isSyncing || isDecrypting}

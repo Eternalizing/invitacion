@@ -3,17 +3,20 @@ import {
   findGuestAsync,
   isSecretPortalId,
   isSecretDashboardId,
+  isSecretWhatsAppId,
 } from '../data/guests';
 
 /**
  * Hook para gestionar el acceso por ID único de invitado (descifrado individual),
- * diferenciando automáticamente entre Invitación de Gala e Invitación Navideña de Empleados.
+ * diferenciando automáticamente entre Invitación de Gala, Invitación Navideña,
+ * Panel Administrativo y Panel de Envío por WhatsApp.
  */
 export function useGuest() {
   const [guest, setGuest] = useState(null);
   const [isValid, setIsValid] = useState(false);
   const [isSecretPortal, setIsSecretPortal] = useState(false);
   const [isAdminDashboard, setIsAdminDashboard] = useState(false);
+  const [isWhatsAppPanel, setIsWhatsAppPanel] = useState(false);
   const [isChristmas, setIsChristmas] = useState(false);
   const [adminKey, setAdminKey] = useState('');
   const [attemptedId, setAttemptedId] = useState('');
@@ -35,6 +38,7 @@ export function useGuest() {
         setIsChristmas(true);
         setIsSecretPortal(false);
         setIsAdminDashboard(false);
+        setIsWhatsAppPanel(false);
         setAdminKey('');
         setAttemptedId('NAVIDAD');
         setIsLoading(false);
@@ -46,6 +50,7 @@ export function useGuest() {
       setIsChristmas(false);
       setIsSecretPortal(false);
       setIsAdminDashboard(false);
+      setIsWhatsAppPanel(false);
       setAdminKey('');
       setAttemptedId('');
       setIsLoading(false);
@@ -56,7 +61,7 @@ export function useGuest() {
     setAttemptedId(trimmed);
     setIsLoading(true);
 
-    // 1. Verificación por hash del Panel de Control
+    // 1. Verificación por hash del Panel de Control Administrativo
     if (isSecretDashboardId(trimmed)) {
       if (seq !== requestSeqRef.current) return false;
       setGuest(null);
@@ -64,12 +69,27 @@ export function useGuest() {
       setIsChristmas(false);
       setIsSecretPortal(false);
       setIsAdminDashboard(true);
+      setIsWhatsAppPanel(false);
       setAdminKey(trimmed);
       setIsLoading(false);
       return true;
     }
 
-    // 2. Verificación por hash del Portal Oculto de Búsqueda
+    // 2. Verificación por hash del Panel de Envío Directo por WhatsApp
+    if (isSecretWhatsAppId(trimmed)) {
+      if (seq !== requestSeqRef.current) return false;
+      setGuest(null);
+      setIsValid(false);
+      setIsChristmas(false);
+      setIsSecretPortal(false);
+      setIsAdminDashboard(false);
+      setIsWhatsAppPanel(true);
+      setAdminKey(trimmed);
+      setIsLoading(false);
+      return true;
+    }
+
+    // 3. Verificación por hash del Portal Oculto de Búsqueda
     if (isSecretPortalId(trimmed)) {
       if (seq !== requestSeqRef.current) return false;
       setGuest(null);
@@ -77,6 +97,7 @@ export function useGuest() {
       setIsChristmas(false);
       setIsSecretPortal(true);
       setIsAdminDashboard(false);
+      setIsWhatsAppPanel(false);
       setAdminKey('');
       setIsLoading(false);
       return true;
@@ -84,9 +105,10 @@ export function useGuest() {
 
     setIsSecretPortal(false);
     setIsAdminDashboard(false);
+    setIsWhatsAppPanel(false);
     setAdminKey('');
 
-    // 3. Búsqueda y descifrado individual del invitado
+    // 4. Búsqueda y descifrado individual del invitado
     const match = await findGuestAsync(trimmed);
     if (seq !== requestSeqRef.current) return false;
 
@@ -147,6 +169,7 @@ export function useGuest() {
       setIsChristmas(false);
       setIsSecretPortal(false);
       setIsAdminDashboard(false);
+      setIsWhatsAppPanel(false);
       setAdminKey('');
       setAttemptedId('');
       setIsLoading(false);
@@ -178,6 +201,7 @@ export function useGuest() {
     isChristmas,
     isSecretPortal,
     isAdminDashboard,
+    isWhatsAppPanel,
     adminKey,
     attemptedId,
     isLoading,
