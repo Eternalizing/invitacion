@@ -35,7 +35,7 @@ function calculateTimelineState(isChristmas = false) {
     if (simStage) {
       const lower = simStage.toLowerCase();
       if (lower === 'misa' || lower === 'proximamente' || lower === 'recepcion-previa') {
-        now = new Date('2026-11-28T06:00:00').getTime();
+        now = new Date('2026-11-28T18:15:00').getTime();
       } else if (lower === 'recepcion' || lower === 'fiesta') {
         now = new Date('2026-11-28T19:30:00').getTime();
       } else if (lower === 'cena') {
@@ -46,7 +46,7 @@ function calculateTimelineState(isChristmas = false) {
     }
   }
 
-  const tMisa = new Date(activeData.scheduleTimestamps?.misa || '2026-11-28T05:30:00').getTime();
+  const tMisa = new Date(activeData.scheduleTimestamps?.misa || '2026-11-28T17:30:00').getTime();
   const tRecepcion = new Date(activeData.scheduleTimestamps?.recepcion || '2026-11-28T19:00:00').getTime();
   const tCena = new Date(activeData.scheduleTimestamps?.cena || '2026-11-28T21:00:00').getTime();
   const tConclusion = new Date(activeData.scheduleTimestamps?.conclusion || '2026-11-29T00:00:00').getTime();
@@ -106,29 +106,29 @@ function calculateTimelineState(isChristmas = false) {
     };
   }
 
-  // 4. Etapa Misa / Espera a Recepción (5:30 a. m. a 7:00 p. m.)
+  // 4. Etapa Misa (5:30 p. m. a 7:00 p. m.)
   if (now >= tMisa) {
     const diff = tRecepcion - now;
     return {
       stage: 'PROXIMAMENTE_RECEPCION',
       title: 'PRÓXIMAMENTE RECEPCIÓN',
       floatingLabel: 'PRÓX. RECEPCIÓN',
-      subtitle: 'Misa de Acción de Gracias (5:30 a. m.) • Tiempo restante para la Recepción',
+      subtitle: 'Misa de Acción de Gracias (5:30 p. m.) • Tiempo restante para la Recepción',
       iconType: 'glass',
       isFinished: false,
       ...calcTimeParts(diff),
     };
   }
 
-  // 5. Etapa Pre-Evento (Antes de las 5:30 a. m.)
+  // 5. Etapa Pre-Evento (Antes de las 5:30 p. m.)
   const diff = tMisa - now;
   return {
     stage: 'PRE_EVENT',
     title: 'CUENTA REGRESIVA',
     floatingLabel: 'FALTAN',
     subtitle: isChristmas
-      ? 'Primer evento (Misa 5:30 a. m.) • Cena Navideña 9:00 p. m.'
-      : 'Primer evento (Misa 5:30 a. m.)',
+      ? 'Primer evento (Misa 5:30 p. m.) • Cena Navideña 9:00 p. m.'
+      : 'Primer evento (Misa 5:30 p. m.)',
     iconType: 'clock',
     isFinished: false,
     ...calcTimeParts(diff),
