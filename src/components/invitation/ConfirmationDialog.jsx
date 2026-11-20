@@ -41,7 +41,7 @@ export default function ConfirmationDialog({
     'https://calendar.google.com/calendar/render?action=TEMPLATE' +
     '&text=' +
     encodeURIComponent(eventTitle) +
-    '&dates=20261128T213000Z/20261129T040000Z' +
+    '&dates=20261128T093000Z/20261129T040000Z' +
     '&details=' +
     encodeURIComponent(
       `Invitación confirmada para ${guestName} (${Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}). ${
@@ -121,7 +121,8 @@ export default function ConfirmationDialog({
           <div className="flex items-center gap-2.5 opacity-90">
             <Calendar className={`w-4 h-4 shrink-0 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`} />
             <span>
-              Sábado, 28 de Noviembre de 2026 • 5:30 p. m.{isChristmas ? ' (Cena Navideña: 9:00 p. m.)' : ''}
+              Sábado, 28 de Noviembre de 2026 • Misa 5:30 a. m. • Recepción 7:00 p. m.
+              {isChristmas ? ' (Cena Navideña: 9:00 p. m.)' : ''}
             </span>
           </div>
 

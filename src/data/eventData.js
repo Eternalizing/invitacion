@@ -18,11 +18,11 @@ export const eventData = {
     subText: "Cinco décadas de trayectoria, visión y compromiso.",
   },
 
-  // Fecha y Conteo Regresivo (5:30 p. m. hora de inicio)
-  eventTimestamp: "2026-11-28T17:30:00",
+  // Fecha y Conteo Regresivo (5:30 a. m. hora de inicio)
+  eventTimestamp: "2026-11-28T05:30:00",
   scheduleTimestamps: {
-    misa: "2026-11-28T17:30:00",
-    recepcion: "2026-11-28T19:00:00", // Misa de 1 hora y 30 min (5:30 p. m. a 7:00 p. m.)
+    misa: "2026-11-28T05:30:00",
+    recepcion: "2026-11-28T19:00:00", // Misa a las 5:30 a. m. • Recepción 7:00 p. m.
     conclusion: "2026-11-29T00:00:00",
   },
   date: {
@@ -36,7 +36,7 @@ export const eventData = {
   itineraryHeader: "PROGRAMA DEL EVENTO",
   itinerary: [
     {
-      time: "5:30 p. m.",
+      time: "5:30 a. m.",
       title: "Misa de Acción de Gracias",
       icon: "church",
       details: [],
@@ -100,9 +100,9 @@ export const christmasEventData = {
       "Una noche especial para compartir, agradecer y celebrar cinco décadas de historia, visión y compromiso.",
   },
 
-  eventTimestamp: "2026-11-28T17:30:00",
+  eventTimestamp: "2026-11-28T05:30:00",
   scheduleTimestamps: {
-    misa: "2026-11-28T17:30:00",
+    misa: "2026-11-28T05:30:00",
     recepcion: "2026-11-28T19:00:00",
     cena: "2026-11-28T21:00:00",
     conclusion: "2026-11-29T00:00:00",
@@ -113,7 +113,7 @@ export const christmasEventData = {
   itineraryHeader: "PROGRAMA DEL EVENTO",
   itinerary: [
     {
-      time: "5:30 p. m.",
+      time: "5:30 a. m.",
       title: "Misa de Acción de Gracias",
       icon: "church",
       details: [],
