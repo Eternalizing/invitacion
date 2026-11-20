@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'nemer_invitaciones_status_v1';
 export const PRODUCTION_BASE_URL = 'https://invitacion-mauve-nu.vercel.app';
-export const RSVP_WHATSAPP_PHONE = '584245506503';
+export const RSVP_WHATSAPP_PHONE = '584127145847';
 
 export function getGuestInvitationUrl(guestId) {
   return `${PRODUCTION_BASE_URL}/?id=${encodeURIComponent(String(guestId || '').trim())}`;
