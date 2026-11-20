@@ -218,20 +218,18 @@ export default function AdminDashboard({ adminKey = '' }) {
 
   return (
     <div
-      className={`min-h-screen w-full p-4 pb-24 sm:p-6 sm:pb-28 md:p-8 md:pb-28 font-montserrat select-none transition-colors duration-700 ${
-        isLight
-          ? 'bg-[#242320] text-[#FAF6ED] selection:bg-[#DDB967] selection:text-[#211A0E]'
-          : 'bg-[#080808] text-[#F5F2EA] selection:bg-[#C9A34E] selection:text-[#17120A]'
-      }`}
+      className={`min-h-screen w-full p-4 pb-24 sm:p-6 sm:pb-28 md:p-8 md:pb-28 font-montserrat select-none transition-colors duration-700 ${isLight
+        ? 'bg-[#242320] text-[#FAF6ED] selection:bg-[#DDB967] selection:text-[#211A0E]'
+        : 'bg-[#080808] text-[#F5F2EA] selection:bg-[#C9A34E] selection:text-[#17120A]'
+        }`}
     >
       {/* Contador Flotante Dinámico en la parte central inferior */}
       <FloatingCountdown isVisible={true} position="bottom" />
 
       {/* Iluminación Ambiental */}
       <div
-        className={`fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[140px] pointer-events-none ${
-          isLight ? 'bg-[#DDB967]/15' : 'bg-[#C9A34E]/10'
-        }`}
+        className={`fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[140px] pointer-events-none ${isLight ? 'bg-[#DDB967]/15' : 'bg-[#C9A34E]/10'
+          }`}
       />
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -276,11 +274,10 @@ export default function AdminDashboard({ adminKey = '' }) {
             <button
               onClick={handleSync}
               disabled={isSyncing || isDecrypting}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${
-                isLight
-                  ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] hover:bg-[#403C34]'
-                  : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] hover:bg-[#202020]'
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${isLight
+                ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] hover:bg-[#403C34]'
+                : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] hover:bg-[#202020]'
+                }`}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#C9A34E]' : ''}`} />
               <span>{isSyncing ? 'Sincronizando...' : lastSyncText}</span>
@@ -289,11 +286,10 @@ export default function AdminDashboard({ adminKey = '' }) {
             <button
               onClick={exportToCSV}
               disabled={isDecrypting || guests.length === 0}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 cursor-pointer ${
-                isLight
-                  ? 'bg-[#DDB967] text-[#211A0E] border-[#FFF0CD]/50 hover:bg-[#e8c77b]'
-                  : 'bg-[#C9A34E] text-[#17120A] border-[#F0DDA7]/50 hover:bg-[#d8b560]'
-              }`}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 cursor-pointer ${isLight
+                ? 'bg-[#DDB967] text-[#211A0E] border-[#FFF0CD]/50 hover:bg-[#e8c77b]'
+                : 'bg-[#C9A34E] text-[#17120A] border-[#F0DDA7]/50 hover:bg-[#d8b560]'
+                }`}
             >
               <Download className="w-3.5 h-3.5" />
               <span>Exportar Excel / CSV</span>
@@ -316,9 +312,8 @@ export default function AdminDashboard({ adminKey = '' }) {
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
               {/* Total Invitados */}
               <div
-                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
-                  isLight ? 'bg-[#33312C]/80 border-[#706044]' : 'bg-[#151515]/80 border-[#51432A]'
-                }`}
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${isLight ? 'bg-[#33312C]/80 border-[#706044]' : 'bg-[#151515]/80 border-[#51432A]'
+                  }`}
               >
                 <div className="flex items-center justify-between opacity-70 text-xs font-semibold tracking-wider uppercase mb-1">
                   <span>Invitaciones</span>
@@ -332,9 +327,8 @@ export default function AdminDashboard({ adminKey = '' }) {
 
               {/* Confirmados */}
               <div
-                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
-                  isLight ? 'bg-emerald-950/20 border-emerald-600/40' : 'bg-emerald-950/30 border-emerald-500/40'
-                }`}
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${isLight ? 'bg-emerald-950/20 border-emerald-600/40' : 'bg-emerald-950/30 border-emerald-500/40'
+                  }`}
               >
                 <div className="flex items-center justify-between text-emerald-300 text-xs font-semibold tracking-wider uppercase mb-1">
                   <span>Confirmados</span>
@@ -348,9 +342,8 @@ export default function AdminDashboard({ adminKey = '' }) {
 
               {/* Pendientes */}
               <div
-                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
-                  isLight ? 'bg-amber-950/20 border-amber-600/40' : 'bg-amber-950/30 border-amber-500/40'
-                }`}
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${isLight ? 'bg-amber-950/20 border-amber-600/40' : 'bg-amber-950/30 border-amber-500/40'
+                  }`}
               >
                 <div className="flex items-center justify-between text-amber-300 text-xs font-semibold tracking-wider uppercase mb-1">
                   <span>Pendientes</span>
@@ -364,9 +357,8 @@ export default function AdminDashboard({ adminKey = '' }) {
 
               {/* No Asistirán */}
               <div
-                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
-                  isLight ? 'bg-rose-950/20 border-rose-600/40' : 'bg-rose-950/30 border-rose-500/40'
-                }`}
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${isLight ? 'bg-rose-950/20 border-rose-600/40' : 'bg-rose-950/30 border-rose-500/40'
+                  }`}
               >
                 <div className="flex items-center justify-between text-rose-300 text-xs font-semibold tracking-wider uppercase mb-1">
                   <span>Declinados</span>
@@ -380,9 +372,8 @@ export default function AdminDashboard({ adminKey = '' }) {
 
               {/* Total Pases Confirmados */}
               <div
-                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between col-span-2 sm:col-span-4 lg:col-span-1 ${
-                  isLight ? 'bg-[#33312C]/80 border-[#706044]' : 'bg-[#151515]/80 border-[#51432A]'
-                }`}
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between col-span-2 sm:col-span-4 lg:col-span-1 ${isLight ? 'bg-[#33312C]/80 border-[#706044]' : 'bg-[#151515]/80 border-[#51432A]'
+                  }`}
               >
                 <div className="flex items-center justify-between text-[#C9A34E] text-xs font-semibold tracking-wider uppercase mb-1">
                   <span>Pases Confirmados</span>
@@ -406,11 +397,10 @@ export default function AdminDashboard({ adminKey = '' }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Buscar por nombre, ID, empresa o cargo..."
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
-                      isLight
-                        ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] placeholder-[#706044] focus:border-[#DDB967]'
-                        : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] placeholder-[#51432A] focus:border-[#C9A34E]'
-                    }`}
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm border outline-none transition-all ${isLight
+                      ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] placeholder-[#706044] focus:border-[#DDB967]'
+                      : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] placeholder-[#51432A] focus:border-[#C9A34E]'
+                      }`}
                   />
                 </div>
 
@@ -420,11 +410,10 @@ export default function AdminDashboard({ adminKey = '' }) {
                   <select
                     value={companyFilter}
                     onChange={(e) => setCompanyFilter(e.target.value)}
-                    className={`w-full sm:w-auto pl-8 pr-8 py-2.5 rounded-xl text-xs sm:text-sm border outline-none transition-all cursor-pointer ${
-                      isLight
-                        ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] focus:border-[#DDB967]'
-                        : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] focus:border-[#C9A34E]'
-                    }`}
+                    className={`w-full sm:w-auto pl-8 pr-8 py-2.5 rounded-xl text-xs sm:text-sm border outline-none transition-all cursor-pointer ${isLight
+                      ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] focus:border-[#DDB967]'
+                      : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] focus:border-[#C9A34E]'
+                      }`}
                   >
                     <option value="ALL">Todas las empresas ({companies.length})</option>
                     {companies.map((comp) => (
@@ -440,43 +429,39 @@ export default function AdminDashboard({ adminKey = '' }) {
               <div className="flex items-center gap-1.5 p-1 rounded-xl border overflow-x-auto text-xs shrink-0 bg-black/20 border-[#51432A]/40">
                 <button
                   onClick={() => setStatusFilter('ALL')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    statusFilter === 'ALL'
-                      ? isLight
-                        ? 'bg-[#DDB967] text-[#211A0E]'
-                        : 'bg-[#C9A34E] text-[#17120A]'
-                      : 'opacity-70 hover:opacity-100'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${statusFilter === 'ALL'
+                    ? isLight
+                      ? 'bg-[#DDB967] text-[#211A0E]'
+                      : 'bg-[#C9A34E] text-[#17120A]'
+                    : 'opacity-70 hover:opacity-100'
+                    }`}
                 >
                   Todos ({stats.total})
                 </button>
                 <button
                   onClick={() => setStatusFilter(GUEST_STATUS.CONFIRMED)}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    statusFilter === GUEST_STATUS.CONFIRMED
-                      ? 'bg-emerald-600 text-white'
-                      : 'opacity-70 hover:opacity-100'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${statusFilter === GUEST_STATUS.CONFIRMED
+                    ? 'bg-emerald-600 text-white'
+                    : 'opacity-70 hover:opacity-100'
+                    }`}
                 >
                   Confirmados ({stats.confirmedCount})
                 </button>
                 <button
                   onClick={() => setStatusFilter(GUEST_STATUS.PENDING)}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    statusFilter === GUEST_STATUS.PENDING
-                      ? 'bg-amber-600 text-white'
-                      : 'opacity-70 hover:opacity-100'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${statusFilter === GUEST_STATUS.PENDING
+                    ? 'bg-amber-600 text-white'
+                    : 'opacity-70 hover:opacity-100'
+                    }`}
                 >
                   Pendientes ({stats.pendingCount})
                 </button>
                 <button
                   onClick={() => setStatusFilter(GUEST_STATUS.DECLINED)}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    statusFilter === GUEST_STATUS.DECLINED
-                      ? 'bg-rose-600 text-white'
-                      : 'opacity-70 hover:opacity-100'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${statusFilter === GUEST_STATUS.DECLINED
+                    ? 'bg-rose-600 text-white'
+                    : 'opacity-70 hover:opacity-100'
+                    }`}
                 >
                   Declinados ({stats.declinedCount})
                 </button>
@@ -490,20 +475,18 @@ export default function AdminDashboard({ adminKey = '' }) {
 
             {/* 4. TABLA ORDENADA Y RESPONSIVA */}
             <div
-              className={`w-full rounded-2xl border overflow-hidden backdrop-blur-md shadow-2xl ${
-                isLight ? 'bg-[#33312C]/90 border-[#706044]' : 'bg-[#151515]/90 border-[#51432A]'
-              }`}
+              className={`w-full rounded-2xl border overflow-hidden backdrop-blur-md shadow-2xl ${isLight ? 'bg-[#33312C]/90 border-[#706044]' : 'bg-[#151515]/90 border-[#51432A]'
+                }`}
             >
               {/* Vista Tabla Desktop & Tablet */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs sm:text-sm">
                   <thead>
                     <tr
-                      className={`border-b text-[11px] uppercase tracking-wider font-bold ${
-                        isLight
-                          ? 'bg-[#242320]/60 border-[#706044]/50 text-[#DDB967]'
-                          : 'bg-[#080808]/60 border-[#51432A]/50 text-[#C9A34E]'
-                      }`}
+                      className={`border-b text-[11px] uppercase tracking-wider font-bold ${isLight
+                        ? 'bg-[#242320]/60 border-[#706044]/50 text-[#DDB967]'
+                        : 'bg-[#080808]/60 border-[#51432A]/50 text-[#C9A34E]'
+                        }`}
                     >
                       <th className="py-3.5 px-4">ID</th>
                       <th className="py-3.5 px-4">Invitado / Cargo</th>
@@ -531,16 +514,14 @@ export default function AdminDashboard({ adminKey = '' }) {
                         return (
                           <tr
                             key={guest.id}
-                            className={`transition-colors ${
-                              isLight ? 'hover:bg-white/5' : 'hover:bg-white/[0.03]'
-                            }`}
+                            className={`transition-colors ${isLight ? 'hover:bg-white/5' : 'hover:bg-white/[0.03]'
+                              }`}
                           >
                             {/* ID */}
                             <td className="py-3 px-4 font-mono font-bold tracking-wider">
                               <span
-                                className={`px-2 py-0.5 rounded-md text-xs ${
-                                  isLight ? 'bg-black/30 text-[#FFF0CD]' : 'bg-black/40 text-[#F0DDA7]'
-                                }`}
+                                className={`px-2 py-0.5 rounded-md text-xs ${isLight ? 'bg-black/30 text-[#FFF0CD]' : 'bg-black/40 text-[#F0DDA7]'
+                                  }`}
                               >
                                 {guest.id}
                               </span>
@@ -564,11 +545,10 @@ export default function AdminDashboard({ adminKey = '' }) {
                             {/* Pases */}
                             <td className="py-3 px-4 text-center">
                               <span
-                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                                  guest.passes > 1
-                                    ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                                    : 'bg-white/5 opacity-80'
-                                }`}
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${guest.passes > 1
+                                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                                  : 'bg-white/5 opacity-80'
+                                  }`}
                               >
                                 <Ticket className="w-3 h-3" />
                                 <span>{guest.passes}</span>
@@ -606,33 +586,30 @@ export default function AdminDashboard({ adminKey = '' }) {
                                 <button
                                   title="Marcar como Confirmado"
                                   onClick={() => handleStatusChange(guest.id, GUEST_STATUS.CONFIRMED)}
-                                  className={`p-1.5 rounded-md transition-all cursor-pointer ${
-                                    isConfirmed
-                                      ? 'bg-emerald-600 text-white'
-                                      : 'opacity-50 hover:opacity-100 hover:text-emerald-400'
-                                  }`}
+                                  className={`p-1.5 rounded-md transition-all cursor-pointer ${isConfirmed
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'opacity-50 hover:opacity-100 hover:text-emerald-400'
+                                    }`}
                                 >
                                   <Check className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   title="Marcar como Pendiente"
                                   onClick={() => handleStatusChange(guest.id, GUEST_STATUS.PENDING)}
-                                  className={`p-1.5 rounded-md transition-all cursor-pointer ${
-                                    isPending
-                                      ? 'bg-amber-600 text-white'
-                                      : 'opacity-50 hover:opacity-100 hover:text-amber-400'
-                                  }`}
+                                  className={`p-1.5 rounded-md transition-all cursor-pointer ${isPending
+                                    ? 'bg-amber-600 text-white'
+                                    : 'opacity-50 hover:opacity-100 hover:text-amber-400'
+                                    }`}
                                 >
                                   <Clock className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   title="Marcar como No Asistirá"
                                   onClick={() => handleStatusChange(guest.id, GUEST_STATUS.DECLINED)}
-                                  className={`p-1.5 rounded-md transition-all cursor-pointer ${
-                                    isDeclined
-                                      ? 'bg-rose-600 text-white'
-                                      : 'opacity-50 hover:opacity-100 hover:text-rose-400'
-                                  }`}
+                                  className={`p-1.5 rounded-md transition-all cursor-pointer ${isDeclined
+                                    ? 'bg-rose-600 text-white'
+                                    : 'opacity-50 hover:opacity-100 hover:text-rose-400'
+                                    }`}
                                 >
                                   <XCircle className="w-3.5 h-3.5" />
                                 </button>
@@ -644,13 +621,12 @@ export default function AdminDashboard({ adminKey = '' }) {
                               <div className="inline-flex items-center gap-2">
                                 <button
                                   onClick={() => handleCopyLink(guest.id)}
-                                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                                    copiedId === guest.id
-                                      ? 'bg-emerald-600 text-white border-emerald-500'
-                                      : isLight
+                                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${copiedId === guest.id
+                                    ? 'bg-emerald-600 text-white border-emerald-500'
+                                    : isLight
                                       ? 'bg-[#242320] border-[#706044] hover:border-[#DDB967]'
                                       : 'bg-[#080808] border-[#51432A] hover:border-[#C9A34E]'
-                                  }`}
+                                    }`}
                                 >
                                   {copiedId === guest.id ? (
                                     <>
@@ -769,11 +745,10 @@ export default function AdminDashboard({ adminKey = '' }) {
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => handleCopyLink(guest.id)}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${
-                                copiedId === guest.id
-                                  ? 'bg-emerald-600 text-white border-emerald-500'
-                                  : 'bg-black/30 border-white/10'
-                              }`}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${copiedId === guest.id
+                                ? 'bg-emerald-600 text-white border-emerald-500'
+                                : 'bg-black/30 border-white/10'
+                                }`}
                             >
                               {copiedId === guest.id ? (
                                 <>
