@@ -1,8 +1,32 @@
 const STORAGE_KEY = 'nemer_invitaciones_status_v1';
 export const PRODUCTION_BASE_URL = 'https://invitacion-mauve-nu.vercel.app';
+export const RSVP_WHATSAPP_PHONE = '584245506503';
 
 export function getGuestInvitationUrl(guestId) {
   return `${PRODUCTION_BASE_URL}/?id=${encodeURIComponent(String(guestId || '').trim())}`;
+}
+
+export function getRsvpWhatsAppUrl({ guestId, guestName, passes = 1, isChristmas = false }) {
+  const passCount = Number(passes) || 1;
+  const passLabel = passCount === 1 ? '1 pase' : `${passCount} pases`;
+  const cleanName = String(guestName || 'Invitado Especial').trim();
+  const cleanId = String(guestId || '').trim();
+  const eventLine = isChristmas
+    ? '¡Hola! Confirmo mi asistencia a los 50 años de Grupo Nemer y la Cena Navideña. 🎄✨'
+    : '¡Hola! Confirmo mi asistencia a la Gala Conmemorativa de los 50 años de Grupo Nemer. ✨';
+
+  const lines = [
+    eventLine,
+    '',
+    `Invitado: ${cleanName}`,
+    `Pases: ${passLabel}`,
+    cleanId ? `Código: ${cleanId}` : '',
+    '',
+    '¡Nos vemos el sábado 28 de noviembre!',
+  ].filter((line, idx, arr) => !(line === '' && arr[idx - 1] === ''));
+
+  const message = lines.join('\n').trim();
+  return `https://api.whatsapp.com/send?phone=${RSVP_WHATSAPP_PHONE}&text=${encodeURIComponent(message)}`;
 }
 
 export const GUEST_STATUS = {

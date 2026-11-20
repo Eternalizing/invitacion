@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { CheckCircle2, Calendar, MapPin, Ticket, X, CalendarPlus } from 'lucide-react';
+import { CheckCircle2, Calendar, MapPin, Ticket, X, CalendarPlus, MessageCircle } from 'lucide-react';
 import GlowingCard from '../common/GlowingCard';
+import { getRsvpWhatsAppUrl } from '../../services/guestStatusService';
 
 export default function ConfirmationDialog({
   isOpen,
   onClose,
+  guestId = '',
   guestName,
   passes = 1,
   isChristmas = false,
@@ -50,6 +52,13 @@ export default function ConfirmationDialog({
     ) +
     '&location=' +
     encodeURIComponent('Centro de Convenciones Eurobuilding, Barinas, Venezuela');
+
+  const whatsappConfirmUrl = getRsvpWhatsAppUrl({
+    guestId,
+    guestName,
+    passes,
+    isChristmas,
+  });
 
   return (
     <div
@@ -136,7 +145,17 @@ export default function ConfirmationDialog({
           Le recomendamos llegar con puntualidad para la Misa de Acción de Gracias previa a la recepción.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3">
+          <a
+            href={whatsappConfirmUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-full font-montserrat font-bold text-xs tracking-wider uppercase bg-[#25D366] hover:bg-[#22c35e] text-[#052e16] shadow-[0_4px_20px_rgba(37,211,102,0.4)] transition-all active:scale-95 cursor-pointer"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>Enviar por WhatsApp</span>
+          </a>
+
           <button
             type="button"
             onClick={onClose}

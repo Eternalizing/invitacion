@@ -20,12 +20,13 @@ import {
   getGuestStatus,
   confirmGuest,
   declineGuest,
+  getRsvpWhatsAppUrl,
   GUEST_STATUS,
 } from './services/guestStatusService';
 import { useGuest } from './hooks/useGuest';
 import { useScrollReveal } from './hooks/useScrollReveal';
 import { getEventData } from './data/eventData';
-import { MapPin, Mail, CheckCircle2, XCircle, Ticket, Loader2, Sparkles } from 'lucide-react';
+import { MapPin, Mail, CheckCircle2, XCircle, Ticket, Loader2, Sparkles, MessageCircle } from 'lucide-react';
 
 function InvitationContent({
   guest,
@@ -54,16 +55,27 @@ function InvitationContent({
     }
   }, [guest]);
 
-  const handleConfirm = async () => {
+  const whatsappConfirmUrl = getRsvpWhatsAppUrl({
+    guestId: guest?.id,
+    guestName,
+    passes,
+    isChristmas,
+  });
+
+  const handleConfirm = () => {
     if (!guest?.id || isConfirming) return;
-    setIsConfirming(true);
 
     confirmGuest(guest.id);
-    await new Promise((resolve) => setTimeout(resolve, 450));
-
-    setIsConfirming(false);
     setAttendanceStatus(GUEST_STATUS.CONFIRMED);
     setIsConfirmDialogOpen(true);
+
+    // Abrir WhatsApp directamente en el clic del usuario (sin esperas async para evitar bloqueo en móviles)
+    try {
+      window.open(whatsappConfirmUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      // Si el navegador bloquea ventanas emergentes, el enlace sigue visible en el diálogo y tarjeta
+    }
+
     try {
       confetti({
         particleCount: 95,
@@ -192,6 +204,7 @@ function InvitationContent({
       <ConfirmationDialog
         isOpen={isConfirmDialogOpen}
         onClose={() => setIsConfirmDialogOpen(false)}
+        guestId={guest?.id}
         guestName={guestName}
         passes={passes}
         isChristmas={isChristmas}
@@ -543,14 +556,23 @@ function InvitationContent({
                 <p className="text-xs sm:text-sm opacity-90 leading-relaxed text-[#FAF6ED] text-center mb-1">
                   ¡Muchas gracias, <strong className="text-gold-shine font-guest font-semibold text-base">{guestName}</strong>!
                 </p>
-                <p className="text-xs opacity-75 text-center">
+                <p className="text-xs opacity-75 text-center mb-4">
                   Su asistencia ({Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}) ha sido registrada en la lista oficial
                   {isChristmas ? ' de los 50 años y Cena Navideña.' : ' de la gala.'}
                 </p>
+                <a
+                  href={whatsappConfirmUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#25D366] hover:bg-[#22c35e] text-[#052e16] shadow-md active:scale-95 transition-all cursor-pointer mb-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Notificar Confirmación por WhatsApp</span>
+                </a>
                 <button
                   type="button"
                   onClick={handleDecline}
-                  className="text-[11px] underline opacity-50 hover:opacity-100 transition-opacity mt-4 cursor-pointer text-[#C9C2B4]"
+                  className="text-[11px] underline opacity-50 hover:opacity-100 transition-opacity mt-2 cursor-pointer text-[#C9C2B4]"
                 >
                   Cambiar respuesta si no podré asistir
                 </button>
