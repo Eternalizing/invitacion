@@ -508,14 +508,6 @@ function InvitationContent({
               >
                 {currentEvent.dressCode.style}
               </p>
-
-              <p
-                className={`text-xs sm:text-sm mt-3 font-light max-w-xs ${
-                  isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
-                }`}
-              >
-                Traje Cóctel / Formal para una noche de celebración inolvidable.
-              </p>
             </div>
           </GlowingCard>
 
