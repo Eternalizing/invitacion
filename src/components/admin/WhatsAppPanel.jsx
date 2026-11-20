@@ -76,13 +76,15 @@ function normalizeWhatsAppPhone(rawPhone) {
   };
 }
 
-const DEFAULT_NAVIDAD_TEMPLATE = `✨ Medio siglo de historia, visión y compromiso.
+const DEFAULT_NAVIDAD_TEMPLATE = `¡Hola, {NOMBRE}! Reciba un cordial saludo.
+
+✨ Medio siglo de historia, visión y compromiso.
 
 Nos emociona muchísimo invitarle a una noche inolvidable en la que celebraremos los 50 años de Grupo Nemer, junto a nuestra tradicional cena navideña. 🎄🥂
 
 Gracias por ser pieza fundamental de este camino lleno de pasión y logros.
 
-💌 Hemos preparado una invitación personalizada especialmente para usted, {NOMBRE}.
+💌 Hemos preparado una invitación personalizada especialmente para usted.
 
 Le invitamos a consultar los detalles del evento y confirmar su asistencia a través del siguiente enlace:
 
@@ -94,13 +96,15 @@ Le invitamos a consultar los detalles del evento y confirmar su asistencia a tra
 Grupo Nemer
 Medio siglo de excelencia.`;
 
-const DEFAULT_GALA_TEMPLATE = `✨ Medio siglo de historia, visión y compromiso.
+const DEFAULT_GALA_TEMPLATE = `¡Hola, {NOMBRE}! Reciba un cordial saludo.
+
+✨ Medio siglo de historia, visión y compromiso.
 
 Nos emociona muchísimo invitarle a una noche inolvidable en la que celebraremos los 50 años de Grupo Nemer en nuestra Gala Conmemorativa. 🥂
 
 Gracias por ser pieza fundamental de este camino lleno de pasión y logros.
 
-💌 Hemos preparado una invitación personalizada especialmente para usted, {NOMBRE}.
+💌 Hemos preparado una invitación personalizada especialmente para usted.
 
 Le invitamos a consultar los detalles del evento y confirmar su asistencia a través del siguiente enlace:
 
