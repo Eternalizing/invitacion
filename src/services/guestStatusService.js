@@ -1,5 +1,3 @@
-import rawGuests from '../data/guests.json';
-
 const STORAGE_KEY = 'nemer_invitaciones_status_v1';
 const SYNC_ENDPOINT = 'https://kvdb.io/8xW4nL9pZ2tM7qYbK3vRc1/nemer50_guest_statuses';
 
@@ -8,6 +6,9 @@ export const GUEST_STATUS = {
   CONFIRMED: 'confirmado',
   DECLINED: 'declinado',
 };
+
+// Lista descifrada en memoria únicamente para la sesión del administrador (nunca se guarda en localStorage ni en el bundle)
+let inMemoryVaultGuests = [];
 
 // Suscriptores para reactividad en componentes
 const listeners = new Set();
@@ -20,6 +21,14 @@ function notifyListeners() {
       // Ignorar errores de suscriptores
     }
   });
+}
+
+/**
+ * Carga en memoria los invitados descifrados de la bóveda administrativa
+ */
+export function setAdminVaultGuests(list) {
+  inMemoryVaultGuests = Array.isArray(list) ? list : [];
+  notifyListeners();
 }
 
 /**
@@ -50,65 +59,40 @@ function saveStoredStatuses(map) {
 }
 
 /**
- * Normaliza y obtiene la lista de invitados unificados con su estado actual
+ * Normaliza y obtiene la lista de invitados de la bóveda con su estado actual
  */
 export function getAllGuestsWithStatus() {
   const statuses = getStoredStatuses();
-  const list = [];
-  const seenNames = new Set();
 
-  // Procesar rawGuests (objeto de IDs o array)
-  if (Array.isArray(rawGuests)) {
-    rawGuests.forEach((item) => {
-      if (!item || !item.id) return;
-      const idKey = String(item.id).trim().toUpperCase();
-      const statusData = statuses[idKey] || { status: GUEST_STATUS.PENDING };
+  return inMemoryVaultGuests.map((item) => {
+    const idKey = String(item.id).trim().toUpperCase();
+    const statusData = statuses[idKey] || { status: GUEST_STATUS.PENDING };
 
-      list.push({
-        id: String(item.id).trim(),
-        name: item.name || 'Invitado Especial',
-        passes: item.passes || 1,
-        status: statusData.status || GUEST_STATUS.PENDING,
-        confirmedAt: statusData.confirmedAt || null,
-        note: statusData.note || '',
-      });
-    });
-  } else if (typeof rawGuests === 'object' && rawGuests !== null) {
-    Object.entries(rawGuests).forEach(([rawId, val]) => {
-      const idKey = String(rawId).trim().toUpperCase();
-      const name = typeof val === 'string' ? val : (val?.name || 'Invitado Especial');
-      const passes = typeof val === 'object' ? (val?.passes || 1) : 1;
-
-      // Opcional: Evitar duplicados exactos si el usuario registró '001', 'VIP01' y 'CAROLINA' para la misma persona
-      // Dejamos el ID principal visible
-      const statusData = statuses[idKey] || { status: GUEST_STATUS.PENDING };
-
-      list.push({
-        id: String(rawId).trim(),
-        name,
-        passes,
-        status: statusData.status || GUEST_STATUS.PENDING,
-        confirmedAt: statusData.confirmedAt || null,
-        note: statusData.note || '',
-      });
-    });
-  }
-
-  return list;
+    return {
+      id: String(item.id).trim(),
+      name: item.name || 'Invitado Especial',
+      passes: Number(item.passes) || 1,
+      empresa: item.empresa || '',
+      cargo: item.cargo || '',
+      status: statusData.status || GUEST_STATUS.PENDING,
+      confirmedAt: statusData.confirmedAt || null,
+      note: statusData.note || '',
+    };
+  });
 }
 
 /**
- * Obtiene el estado actual de un invitado por su ID
+ * Obtiene el estado de un invitado específico
  */
 export function getGuestStatus(guestId) {
   if (!guestId) return GUEST_STATUS.PENDING;
-  const statuses = getStoredStatuses();
   const key = String(guestId).trim().toUpperCase();
+  const statuses = getStoredStatuses();
   return statuses[key]?.status || GUEST_STATUS.PENDING;
 }
 
 /**
- * Marca un invitado como CONFIRMADO
+ * Confirma la asistencia de un invitado
  */
 export async function confirmGuest(guestId, note = '') {
   if (!guestId) return false;
@@ -136,7 +120,7 @@ export async function confirmGuest(guestId, note = '') {
 }
 
 /**
- * Marca un invitado como DECLINADO (No asistirá)
+ * Registra que un invitado declinó la asistencia
  */
 export async function declineGuest(guestId, note = '') {
   if (!guestId) return false;
@@ -193,7 +177,7 @@ export async function setGuestStatus(guestId, newStatus) {
 }
 
 /**
- * Sincronización en segundo plano con la nube (KVDB)
+ * Envía los estados a la nube (KVdb) para persistencia compartida entre dispositivos
  */
 async function pushToCloud(data) {
   try {
@@ -214,7 +198,7 @@ export async function syncWithCloud() {
   try {
     const response = await fetch(SYNC_ENDPOINT, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' },
+      headers: { Accept: 'application/json' },
     });
     if (response.ok) {
       const remoteData = await response.json();
@@ -242,18 +226,25 @@ export function subscribeToGuestStatus(listener) {
 }
 
 /**
- * Exporta todos los invitados y sus estados a un archivo CSV descargable
+ * Exporta todos los invitados y sus estados/enlaces a un archivo CSV descargable
  */
 export function exportToCSV() {
   const guests = getAllGuestsWithStatus();
-  const headers = ['ID', 'Nombre', 'Pases', 'Estado', 'Fecha_Confirmacion'];
+  const origin =
+    typeof window !== 'undefined'
+      ? window.location.origin || `${window.location.protocol}//${window.location.host}`
+      : '';
+  const headers = ['ID', 'Nombre', 'Empresa', 'Cargo', 'Pases', 'Estado', 'Fecha_Confirmacion', 'Link_Invitacion'];
 
   const rows = guests.map((g) => [
     `"${g.id}"`,
     `"${g.name.replace(/"/g, '""')}"`,
+    `"${(g.empresa || '').replace(/"/g, '""')}"`,
+    `"${(g.cargo || '').replace(/"/g, '""')}"`,
     g.passes,
     `"${g.status.toUpperCase()}"`,
     `"${g.confirmedAt || ''}"`,
+    `"${origin}/?id=${encodeURIComponent(g.id)}"`,
   ]);
 
   const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -268,4 +259,3 @@ export function exportToCSV() {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
-

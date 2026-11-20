@@ -40,3 +40,8 @@ pnpm-debug.log*
 *.ps1
 scratch/
 
+# Private employee source data (never commit plain-text guest PII)
+Recursos/*.json
+Recursos/*.csv
+Recursos/*.xlsx
+Recursos/navidad recursos/

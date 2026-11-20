@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { eventData } from '../../data/eventData';
-import { SECRET_PORTAL_ID, SECRET_DASHBOARD_ID } from '../../data/guests';
-import { KeyRound, ArrowRight, AlertCircle, MessageCircle, Calendar, MapPin, Table } from 'lucide-react';
+import { KeyRound, ArrowRight, AlertCircle, MessageCircle, Calendar, MapPin } from 'lucide-react';
 
-export default function FallbackHome({ attemptedId = '', onAccessGuest }) {
+export default function FallbackHome({ attemptedId = '', isSecretPortal = false, onAccessGuest }) {
   const { isLight } = useTheme();
   const [inputCode, setInputCode] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const clean = inputCode.trim();
 
@@ -22,7 +21,7 @@ export default function FallbackHome({ attemptedId = '', onAccessGuest }) {
     setIsSubmitting(true);
     setErrorMessage('');
 
-    const success = onAccessGuest ? onAccessGuest(clean) : false;
+    const success = onAccessGuest ? await onAccessGuest(clean) : false;
 
     if (!success) {
       setIsSubmitting(false);
@@ -98,7 +97,7 @@ export default function FallbackHome({ attemptedId = '', onAccessGuest }) {
           />
 
           {/* Mensaje de estado contextual */}
-          {attemptedId && attemptedId !== SECRET_PORTAL_ID ? (
+          {attemptedId && !isSecretPortal ? (
             <div
               className={`flex items-start text-left gap-3 p-3.5 rounded-2xl mb-5 text-xs sm:text-sm leading-relaxed border ${
                 isLight
@@ -149,7 +148,7 @@ export default function FallbackHome({ attemptedId = '', onAccessGuest }) {
                   setInputCode(e.target.value);
                   if (errorMessage) setErrorMessage('');
                 }}
-                placeholder="Ejemplo: 839214 o su código asignado"
+                placeholder="Ingrese su código de 6 dígitos"
                 className={`w-full pl-10 pr-4 py-3.5 rounded-2xl text-xs sm:text-sm font-medium tracking-wider outline-none transition-all duration-300 border ${
                   isLight
                     ? 'bg-[#242320] border-[#706044] text-[#FAF6ED] placeholder-[#706044] focus:border-[#DDB967] focus:ring-1 focus:ring-[#DDB967]'
@@ -218,22 +217,8 @@ export default function FallbackHome({ attemptedId = '', onAccessGuest }) {
             <MessageCircle className="w-3.5 h-3.5" />
             <span>Contactar al Comité Organizador ({eventData.rsvp.subtitle})</span>
           </a>
-
-          {/* Enlace al panel de control */}
-          <a
-            href={`/?id=${SECRET_DASHBOARD_ID}`}
-            className={`mt-4 inline-flex items-center gap-1.5 text-[11px] font-medium tracking-wider transition-opacity py-1.5 px-3.5 rounded-full border opacity-75 hover:opacity-100 ${
-              isLight
-                ? 'border-[#706044] text-[#DDB967] hover:bg-[#33312C]'
-                : 'border-[#51432A] text-[#C9A34E] hover:bg-[#151515]'
-            }`}
-          >
-            <Table className="w-3 h-3" />
-            <span>Ver Panel y Tabla de Invitaciones</span>
-          </a>
         </div>
       </div>
     </div>
   );
 }
-

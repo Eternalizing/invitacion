@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
-import { eventData } from '../../data/eventData';
+import { getEventData } from '../../data/eventData';
 import { useTheme } from '../../context/ThemeContext';
 import SmoothImage from '../common/SmoothImage';
+import SnowFall from '../common/SnowFall';
 
-export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenStart, onOpenComplete }) {
+export default function EnvelopeModal({
+  guestName,
+  passes = 1,
+  isChristmas = false,
+  onOpen,
+  onOpenStart,
+  onOpenComplete,
+}) {
   const { isLight } = useTheme();
+  const currentEvent = getEventData(isChristmas);
 
   // Secuencia elegante de revelación de logos:
   // 'idle' -> 'blurring-envelope' -> 'showing-logo-nemer' -> 'showing-logo-50' -> 'transition-out'
@@ -56,7 +65,6 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
     }, 600);
   };
 
-  // Partículas ambientales de polvo dorado
   const particles = [
     { top: '15%', left: '20%', size: '5px', duration: '5s', delay: '0s' },
     { top: '25%', left: '75%', size: '6px', duration: '6s', delay: '1s' },
@@ -79,10 +87,15 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
           : 'opacity-100'
       }`}
     >
+      {/* Nieve cayendo suavemente en la invitación navideña */}
+      {isChristmas && <SnowFall intensity="medium" />}
+
       {/* 1. Iluminación ambiental cálida */}
       <div
         className={`absolute w-[700px] h-[700px] rounded-full blur-[140px] pointer-events-none transition-all duration-700 ${
-          isLight
+          isChristmas
+            ? 'bg-gradient-to-tr from-[#D42426]/20 via-[#C9A34E]/20 to-emerald-700/15'
+            : isLight
             ? 'bg-gradient-to-tr from-[#DDB967]/25 via-[#706044]/18 to-transparent'
             : 'bg-gradient-to-tr from-[#C9A34E]/20 via-[#51432A]/15 to-transparent'
         }`}
@@ -113,7 +126,7 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
         }`}
       />
 
-      {/* 3. Escaparate del Sobre de Gala (Solo visible al inicio) */}
+      {/* 3. Escaparate del Sobre de Gala o Sobre Navideño */}
       {isEnvelopeVisible && (
         <div
           className={`relative flex flex-col items-center justify-center w-full max-w-xl transition-all duration-700 ease-out z-20 ${
@@ -122,7 +135,7 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
               : 'scale-100 opacity-100 blur-0'
           }`}
         >
-          {/* Insignia superior flotante (sin fondo ni bordes) */}
+          {/* Insignia superior flotante */}
           <div
             className={`mb-4 sm:mb-6 inline-flex items-center gap-2.5 px-2 py-1 text-xs sm:text-sm tracking-[0.22em] uppercase font-montserrat transition-colors duration-500 bg-transparent border-0 ${
               isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
@@ -130,26 +143,35 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
           >
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                isLight ? 'bg-[#DDB967] shadow-[0_0_8px_rgba(221,185,103,0.7)]' : 'bg-[#C9A34E] shadow-[0_0_8px_rgba(201,163,78,0.7)]'
+                isChristmas
+                  ? 'bg-[#FF4D4F] shadow-[0_0_8px_rgba(255,77,79,0.8)]'
+                  : isLight
+                  ? 'bg-[#DDB967] shadow-[0_0_8px_rgba(221,185,103,0.7)]'
+                  : 'bg-[#C9A34E] shadow-[0_0_8px_rgba(201,163,78,0.7)]'
               }`}
             />
-            <span className="font-semibold">Invitación de Gala Exclusiva</span>
+            <span className="font-semibold">
+              {isChristmas ? '50 Años & Cena Navideña Exclusiva' : 'Invitación de Gala Exclusiva'}
+            </span>
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                isLight ? 'bg-[#DDB967] shadow-[0_0_8px_rgba(221,185,103,0.7)]' : 'bg-[#C9A34E] shadow-[0_0_8px_rgba(201,163,78,0.7)]'
+                isChristmas
+                  ? 'bg-[#FF4D4F] shadow-[0_0_8px_rgba(255,77,79,0.8)]'
+                  : isLight
+                  ? 'bg-[#DDB967] shadow-[0_0_8px_rgba(221,185,103,0.7)]'
+                  : 'bg-[#C9A34E] shadow-[0_0_8px_rgba(201,163,78,0.7)]'
               }`}
             />
           </div>
 
-          {/* Sobre de Gala (sin fondo de tarjeta ni bordes externos) */}
+          {/* Sobre (Gala o Carta de Invitación Navideña con sello de copo de nieve) */}
           <div
             onClick={handleOpen}
             className="relative w-full aspect-[1024/524] max-w-[580px] cursor-pointer group transition-all duration-500 hover:scale-[1.025] bg-transparent border-0"
           >
-            {/* Imagen de alta fidelidad del sobre con silueta natural y carga suave */}
             <SmoothImage
-              src={eventData.logos.envelopeImage}
-              alt="Sobre de Invitación 50 Años"
+              src={currentEvent.logos.envelopeImage}
+              alt={isChristmas ? 'Carta de Invitación Navideña 50 Años' : 'Sobre de Invitación 50 Años'}
               loading="eager"
               className="w-full h-full object-contain filter drop-shadow-[0_20px_45px_rgba(0,0,0,0.85)] transition-transform duration-700 group-hover:scale-[1.01]"
             />
@@ -205,7 +227,6 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
               : 'opacity-100 scale-100'
           }`}
         >
-          {/* 1. PRIMER LOGO: ATEF NEMER GRUPO DE EMPRESAS */}
           <div
             className={`relative flex items-center justify-center max-w-[85vw] sm:max-w-md w-full transition-all duration-700 ease-out ${
               stage === 'showing-logo-nemer' || stage === 'showing-logo-50' || stage === 'transition-out'
@@ -214,7 +235,7 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
             }`}
           >
             <SmoothImage
-              src={eventData.logos.mainCompanyLogo}
+              src={currentEvent.logos.mainCompanyLogo}
               alt="Atef Nemer Grupo de Empresas"
               loading="eager"
               className={`max-h-20 sm:max-h-24 md:max-h-28 w-auto max-w-full object-contain filter ${
@@ -225,7 +246,6 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
             />
           </div>
 
-          {/* 2. SEGUNDO LOGO: 50 AÑOS */}
           <div
             className={`relative flex items-center justify-center mt-6 sm:mt-8 max-w-[70vw] sm:max-w-xs w-full transition-all duration-700 ease-out ${
               stage === 'showing-logo-50' || stage === 'transition-out'
@@ -234,7 +254,7 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
             }`}
           >
             <SmoothImage
-              src={eventData.logos.logo50Anos}
+              src={currentEvent.logos.logo50Anos}
               alt="50 Años de Trayectoria"
               loading="eager"
               className={`max-h-16 sm:max-h-20 md:max-h-24 w-auto max-w-full object-contain filter ${
@@ -245,7 +265,6 @@ export default function EnvelopeModal({ guestName, passes = 1, onOpen, onOpenSta
             />
           </div>
 
-          {/* Indicador discreto para acceder o saltar */}
           <span
             className={`text-[10px] sm:text-xs font-montserrat tracking-widest uppercase mt-8 opacity-70 transition-colors duration-300 ${
               isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'

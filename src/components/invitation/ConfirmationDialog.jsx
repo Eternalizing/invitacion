@@ -1,13 +1,17 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { eventData } from '../../data/eventData';
 import { CheckCircle2, Calendar, MapPin, Ticket, X, CalendarPlus } from 'lucide-react';
 import GlowingCard from '../common/GlowingCard';
 
-export default function ConfirmationDialog({ isOpen, onClose, guestName, passes = 1 }) {
+export default function ConfirmationDialog({
+  isOpen,
+  onClose,
+  guestName,
+  passes = 1,
+  isChristmas = false,
+}) {
   const { isLight } = useTheme();
 
-  // Cerrar con tecla Escape y bloquear scroll mientras el diálogo esté activo
   useEffect(() => {
     if (!isOpen) return;
 
@@ -29,15 +33,20 @@ export default function ConfirmationDialog({ isOpen, onClose, guestName, passes 
 
   if (!isOpen) return null;
 
-  // Enlace para agendar en Google Calendar
+  const eventTitle = isChristmas
+    ? '50.º Aniversario & Cena Navideña — Atef Nemer Grupo de Empresas'
+    : 'Gala 50.º Aniversario — Atef Nemer Grupo de Empresas';
+
   const googleCalendarUrl =
     'https://calendar.google.com/calendar/render?action=TEMPLATE' +
     '&text=' +
-    encodeURIComponent('Gala 50.º Aniversario — Atef Nemer Grupo de Empresas') +
+    encodeURIComponent(eventTitle) +
     '&dates=20261128T213000Z/20261129T040000Z' +
     '&details=' +
     encodeURIComponent(
-      `Invitación confirmada para ${guestName} (${Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}). Gala Conmemorativa 50 Años.`
+      `Invitación confirmada para ${guestName} (${Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}). ${
+        isChristmas ? 'Celebración 50 Años y Tradicional Cena Navideña (9:00 p. m.).' : 'Gala Conmemorativa 50 Años.'
+      }`
     ) +
     '&location=' +
     encodeURIComponent('Centro de Convenciones Eurobuilding, Barinas, Venezuela');
@@ -49,19 +58,17 @@ export default function ConfirmationDialog({ isOpen, onClose, guestName, passes 
       aria-labelledby="confirm-dialog-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 select-none animate-fadeIn"
     >
-      {/* Fondo oscuro desenfocado (Backdrop) */}
       <div
         onClick={onClose}
         className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300"
       />
 
-      {/* Contenedor del Diálogo con borde dorado animado */}
       <GlowingCard
         as="div"
+        isChristmas={isChristmas}
         className="max-w-lg shadow-2xl relative z-10"
         innerClassName="p-6 sm:p-8 text-center"
       >
-        {/* Botón de cierre (X) */}
         <button
           type="button"
           onClick={onClose}
@@ -71,7 +78,6 @@ export default function ConfirmationDialog({ isOpen, onClose, guestName, passes 
           <X className="w-5 h-5" />
         </button>
 
-        {/* Icono de Verificación con Resplandor Dorado */}
         <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20 mb-4 flex items-center justify-center">
           <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl animate-pulse" />
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-500/15 border border-emerald-500/50 flex items-center justify-center text-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.35)]">
@@ -79,7 +85,6 @@ export default function ConfirmationDialog({ isOpen, onClose, guestName, passes 
           </div>
         </div>
 
-        {/* Título Principal */}
         <h3
           id="confirm-dialog-title"
           className="font-serif italic text-2xl sm:text-3xl font-normal leading-snug mb-1 text-gold-shine"
@@ -93,13 +98,12 @@ export default function ConfirmationDialog({ isOpen, onClose, guestName, passes 
           }`}
         />
 
-        {/* Mensaje Personalizado */}
         <p className="text-xs sm:text-sm leading-relaxed mb-4 opacity-90">
           Estimado(a) <strong className="text-gold-shine font-semibold">{guestName}</strong>, es un honor confirmar
-          su grata presencia en nuestra celebración de gala.
+          su grata presencia en nuestra{' '}
+          {isChristmas ? 'celebración de 50 años y tradicional Cena Navideña.' : 'celebración de gala.'}
         </p>
 
-        {/* Tarjeta de Resumen del Evento y Pase */}
         <div
           className={`rounded-2xl p-4 my-4 text-left border text-xs sm:text-sm space-y-2.5 ${
             isLight
@@ -107,7 +111,6 @@ export default function ConfirmationDialog({ isOpen, onClose, guestName, passes 
               : 'bg-[#080808]/70 border-[#51432A]/60'
           }`}
         >
-          {/* Pases asignados */}
           <div className="flex items-center gap-2.5">
             <Ticket className={`w-4 h-4 shrink-0 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`} />
             <span className="font-bold tracking-wider uppercase">
@@ -115,25 +118,23 @@ export default function ConfirmationDialog({ isOpen, onClose, guestName, passes 
             </span>
           </div>
 
-          {/* Fecha y hora */}
           <div className="flex items-center gap-2.5 opacity-90">
             <Calendar className={`w-4 h-4 shrink-0 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`} />
-            <span>Sábado, 28 de Noviembre de 2026 • 5:30 p. m.</span>
+            <span>
+              Sábado, 28 de Noviembre de 2026 • 5:30 p. m.{isChristmas ? ' (Cena Navideña: 9:00 p. m.)' : ''}
+            </span>
           </div>
 
-          {/* Lugar */}
           <div className="flex items-center gap-2.5 opacity-90">
             <MapPin className={`w-4 h-4 shrink-0 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`} />
             <span>Centro de Convenciones Eurobuilding • Barinas</span>
           </div>
         </div>
 
-        {/* Nota de puntualidad y agradecimiento */}
         <p className="text-[11px] sm:text-xs opacity-70 leading-relaxed mb-6">
           Le recomendamos llegar con puntualidad para la Misa de Acción de Gracias previa a la recepción.
         </p>
 
-        {/* Botones de Acción */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             type="button"
@@ -165,4 +166,3 @@ export default function ConfirmationDialog({ isOpen, onClose, guestName, passes 
     </div>
   );
 }
-

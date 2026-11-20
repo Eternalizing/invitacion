@@ -24,6 +24,7 @@ export default {
         nemer: ['"Nemer Titulares"', '"Cinzel"', 'serif'],
         montserrat: ['"Montserrat"', 'sans-serif'],
         serif: ['"Playfair Display"', '"Cinzel"', 'Georgia', 'serif'],
+        guest: ['"Lora"', '"Cinzel"', 'Georgia', 'serif'],
       },
     },
   },

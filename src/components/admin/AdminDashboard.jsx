@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { eventData } from '../../data/eventData';
+import { loadAdminVaultAsync } from '../../data/guests';
 import { FloatingCountdown } from '../invitation/Countdown';
 import {
   getAllGuestsWithStatus,
+  setAdminVaultGuests,
   setGuestStatus,
   subscribeToGuestStatus,
   syncWithCloud,
@@ -22,38 +24,66 @@ import {
   Users,
   Ticket,
   Check,
-  Filter,
+  Building2,
+  Lock,
 } from 'lucide-react';
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ adminKey = '' }) {
   const { isLight } = useTheme();
   const [guests, setGuests] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL', 'pendiente', 'confirmado', 'declinado'
+  const [companyFilter, setCompanyFilter] = useState('ALL');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isDecrypting, setIsDecrypting] = useState(true);
+  const [vaultError, setVaultError] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [lastSyncText, setLastSyncText] = useState('Local');
 
-  // Cargar lista y suscribir a cambios reactivos
+  // Descifrar bóveda en memoria al abrir y suscribir a cambios reactivos
   useEffect(() => {
-    setGuests(getAllGuestsWithStatus());
+    let active = true;
+
+    const initVault = async () => {
+      setIsDecrypting(true);
+      setVaultError(false);
+      const decoded = await loadAdminVaultAsync(adminKey);
+      if (!active) return;
+
+      if (decoded) {
+        setAdminVaultGuests(decoded);
+        setGuests(getAllGuestsWithStatus());
+        setIsDecrypting(false);
+        handleSync();
+      } else {
+        setAdminVaultGuests([]);
+        setGuests([]);
+        setVaultError(true);
+        setIsDecrypting(false);
+      }
+    };
+
+    initVault();
 
     const unsubscribe = subscribeToGuestStatus(() => {
       setGuests(getAllGuestsWithStatus());
     });
 
-    // Sincronizar automáticamente con la nube al abrir
-    handleSync();
-
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      active = false;
+      unsubscribe();
+      setAdminVaultGuests([]);
+    };
+  }, [adminKey]);
 
   const handleSync = async () => {
     setIsSyncing(true);
     const res = await syncWithCloud();
     setIsSyncing(false);
     if (res.success) {
-      setLastSyncText(`Sincronizado (${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })})`);
+      setLastSyncText(
+        `Sincronizado (${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })})`
+      );
     } else {
       setLastSyncText('Modo Local');
     }
@@ -64,7 +94,6 @@ export default function AdminDashboard() {
     const link = `${origin}/?id=${encodeURIComponent(guestId)}`;
     let copied = false;
 
-    // 1. Intentar API moderna (requiere HTTPS o localhost)
     if (navigator.clipboard && window.isSecureContext) {
       try {
         await navigator.clipboard.writeText(link);
@@ -74,7 +103,6 @@ export default function AdminDashboard() {
       }
     }
 
-    // 2. Fallback universal para teléfonos móviles, iOS Safari y conexiones locales HTTP
     if (!copied) {
       try {
         const textArea = document.createElement('textarea');
@@ -103,7 +131,6 @@ export default function AdminDashboard() {
       }
     }
 
-    // Feedback visual inmediato en el botón correspondiente
     setCopiedId(guestId);
     setTimeout(() => setCopiedId(null), 2200);
   };
@@ -111,6 +138,15 @@ export default function AdminDashboard() {
   const handleStatusChange = async (guestId, newStatus) => {
     await setGuestStatus(guestId, newStatus);
   };
+
+  // Lista única de empresas
+  const companies = useMemo(() => {
+    const set = new Set();
+    guests.forEach((g) => {
+      if (g.empresa) set.add(g.empresa);
+    });
+    return Array.from(set).sort();
+  }, [guests]);
 
   // Métricas
   const stats = useMemo(() => {
@@ -132,17 +168,21 @@ export default function AdminDashboard() {
 
   // Lista filtrada
   const filteredGuests = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return guests.filter((g) => {
       const matchesSearch =
-        g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.id.toLowerCase().includes(searchQuery.toLowerCase());
+        !q ||
+        g.name.toLowerCase().includes(q) ||
+        g.id.toLowerCase().includes(q) ||
+        (g.empresa || '').toLowerCase().includes(q) ||
+        (g.cargo || '').toLowerCase().includes(q);
 
-      const matchesStatus =
-        statusFilter === 'ALL' || g.status === statusFilter;
+      const matchesStatus = statusFilter === 'ALL' || g.status === statusFilter;
+      const matchesCompany = companyFilter === 'ALL' || g.empresa === companyFilter;
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesStatus && matchesCompany;
     });
-  }, [guests, searchQuery, statusFilter]);
+  }, [guests, searchQuery, statusFilter, companyFilter]);
 
   return (
     <div
@@ -178,9 +218,15 @@ export default function AdminDashboard() {
               className="max-h-10 sm:max-h-12 w-auto object-contain logo-glow"
             />
             <div className="hidden sm:block ml-2">
-              <h1 className="text-sm sm:text-base font-bold tracking-wider uppercase text-gold-shine">
-                Panel de Invitaciones
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm sm:text-base font-bold tracking-wider uppercase text-gold-shine">
+                  Panel de Invitaciones
+                </h1>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/60 border border-emerald-500/40 text-emerald-300">
+                  <Lock className="w-2.5 h-2.5" />
+                  <span>Cifrado</span>
+                </span>
+              </div>
               <p className="text-[11px] opacity-70">Control oficial de confirmaciones de asistencia</p>
             </div>
           </div>
@@ -189,7 +235,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
             <button
               onClick={handleSync}
-              disabled={isSyncing}
+              disabled={isSyncing || isDecrypting}
               className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${
                 isLight
                   ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] hover:bg-[#403C34]'
@@ -202,6 +248,7 @@ export default function AdminDashboard() {
 
             <button
               onClick={exportToCSV}
+              disabled={isDecrypting || guests.length === 0}
               className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 cursor-pointer ${
                 isLight
                   ? 'bg-[#DDB967] text-[#211A0E] border-[#FFF0CD]/50 hover:bg-[#e8c77b]'
@@ -214,187 +261,395 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* 2. Tarjetas de Resumen de KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
-          {/* Total Invitados */}
-          <div
-            className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
-              isLight ? 'bg-[#33312C]/80 border-[#706044]' : 'bg-[#151515]/80 border-[#51432A]'
-            }`}
-          >
-            <div className="flex items-center justify-between opacity-70 text-xs font-semibold tracking-wider uppercase mb-1">
-              <span>Invitaciones</span>
-              <Users className="w-4 h-4 text-[#C9A34E]" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-bold font-serif text-gold-shine">
-              {stats.total}
-            </div>
-            <span className="text-[10px] opacity-60 mt-1">Registradas en el sistema</span>
+        {isDecrypting ? (
+          <div className="py-24 text-center flex flex-col items-center gap-3 opacity-80">
+            <RefreshCw className="w-6 h-6 animate-spin text-[#C9A34E]" />
+            <span className="text-xs sm:text-sm tracking-wider">Descifrando bóveda privada de invitados...</span>
           </div>
-
-          {/* Confirmados */}
-          <div
-            className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
-              isLight ? 'bg-emerald-950/20 border-emerald-600/40' : 'bg-emerald-950/30 border-emerald-500/40'
-            }`}
-          >
-            <div className="flex items-center justify-between text-emerald-300 text-xs font-semibold tracking-wider uppercase mb-1">
-              <span>Confirmados</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-bold font-serif text-emerald-400">
-              {stats.confirmedCount}
-            </div>
-            <span className="text-[10px] text-emerald-300/80 mt-1">{stats.percentage}% del total</span>
+        ) : vaultError ? (
+          <div className="py-20 text-center text-rose-400 text-sm">
+            No se pudo descifrar la bóveda de invitados. Verifique la URL de acceso administrativo.
           </div>
+        ) : (
+          <>
+            {/* 2. Tarjetas de Resumen de KPIs */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+              {/* Total Invitados */}
+              <div
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
+                  isLight ? 'bg-[#33312C]/80 border-[#706044]' : 'bg-[#151515]/80 border-[#51432A]'
+                }`}
+              >
+                <div className="flex items-center justify-between opacity-70 text-xs font-semibold tracking-wider uppercase mb-1">
+                  <span>Invitaciones</span>
+                  <Users className="w-4 h-4 text-[#C9A34E]" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold font-serif text-gold-shine">
+                  {stats.total}
+                </div>
+                <span className="text-[10px] opacity-60 mt-1">{companies.length} empresas</span>
+              </div>
 
-          {/* Pendientes */}
-          <div
-            className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
-              isLight ? 'bg-amber-950/20 border-amber-600/40' : 'bg-amber-950/30 border-amber-500/40'
-            }`}
-          >
-            <div className="flex items-center justify-between text-amber-300 text-xs font-semibold tracking-wider uppercase mb-1">
-              <span>Pendientes</span>
-              <Clock className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-bold font-serif text-amber-400">
-              {stats.pendingCount}
-            </div>
-            <span className="text-[10px] text-amber-300/80 mt-1">Por confirmar</span>
-          </div>
+              {/* Confirmados */}
+              <div
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
+                  isLight ? 'bg-emerald-950/20 border-emerald-600/40' : 'bg-emerald-950/30 border-emerald-500/40'
+                }`}
+              >
+                <div className="flex items-center justify-between text-emerald-300 text-xs font-semibold tracking-wider uppercase mb-1">
+                  <span>Confirmados</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold font-serif text-emerald-400">
+                  {stats.confirmedCount}
+                </div>
+                <span className="text-[10px] text-emerald-300/80 mt-1">{stats.percentage}% del total</span>
+              </div>
 
-          {/* No Asistirán */}
-          <div
-            className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
-              isLight ? 'bg-rose-950/20 border-rose-600/40' : 'bg-rose-950/30 border-rose-500/40'
-            }`}
-          >
-            <div className="flex items-center justify-between text-rose-300 text-xs font-semibold tracking-wider uppercase mb-1">
-              <span>Declinados</span>
-              <XCircle className="w-4 h-4 text-rose-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-bold font-serif text-rose-400">
-              {stats.declinedCount}
-            </div>
-            <span className="text-[10px] text-rose-300/80 mt-1">No podrán asistir</span>
-          </div>
+              {/* Pendientes */}
+              <div
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
+                  isLight ? 'bg-amber-950/20 border-amber-600/40' : 'bg-amber-950/30 border-amber-500/40'
+                }`}
+              >
+                <div className="flex items-center justify-between text-amber-300 text-xs font-semibold tracking-wider uppercase mb-1">
+                  <span>Pendientes</span>
+                  <Clock className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold font-serif text-amber-400">
+                  {stats.pendingCount}
+                </div>
+                <span className="text-[10px] text-amber-300/80 mt-1">Por confirmar</span>
+              </div>
 
-          {/* Total Pases Confirmados */}
-          <div
-            className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between col-span-2 sm:col-span-4 lg:col-span-1 ${
-              isLight ? 'bg-[#33312C]/80 border-[#706044]' : 'bg-[#151515]/80 border-[#51432A]'
-            }`}
-          >
-            <div className="flex items-center justify-between text-[#C9A34E] text-xs font-semibold tracking-wider uppercase mb-1">
-              <span>Pases Confirmados</span>
-              <Ticket className="w-4 h-4 text-[#C9A34E]" />
+              {/* No Asistirán */}
+              <div
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between ${
+                  isLight ? 'bg-rose-950/20 border-rose-600/40' : 'bg-rose-950/30 border-rose-500/40'
+                }`}
+              >
+                <div className="flex items-center justify-between text-rose-300 text-xs font-semibold tracking-wider uppercase mb-1">
+                  <span>Declinados</span>
+                  <XCircle className="w-4 h-4 text-rose-400" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold font-serif text-rose-400">
+                  {stats.declinedCount}
+                </div>
+                <span className="text-[10px] text-rose-300/80 mt-1">No podrán asistir</span>
+              </div>
+
+              {/* Total Pases Confirmados */}
+              <div
+                className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col justify-between col-span-2 sm:col-span-4 lg:col-span-1 ${
+                  isLight ? 'bg-[#33312C]/80 border-[#706044]' : 'bg-[#151515]/80 border-[#51432A]'
+                }`}
+              >
+                <div className="flex items-center justify-between text-[#C9A34E] text-xs font-semibold tracking-wider uppercase mb-1">
+                  <span>Pases Confirmados</span>
+                  <Ticket className="w-4 h-4 text-[#C9A34E]" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold font-serif text-gold-shine">
+                  {stats.confirmedPasses}
+                </div>
+                <span className="text-[10px] opacity-60 mt-1">Personas confirmadas</span>
+              </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold font-serif text-gold-shine">
-              {stats.confirmedPasses}
-            </div>
-            <span className="text-[10px] opacity-60 mt-1">Personas confirmadas</span>
-          </div>
-        </div>
 
-        {/* 3. Buscador y Filtros por Pestañas */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5">
-          {/* Input de Búsqueda */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por nombre o ID de invitado..."
-              className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
-                isLight
-                  ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] placeholder-[#706044] focus:border-[#DDB967]'
-                  : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] placeholder-[#51432A] focus:border-[#C9A34E]'
-              }`}
-            />
-          </div>
+            {/* 3. Buscador, Filtro por Empresa y Filtros por Pestañas */}
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 mb-5">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
+                {/* Input de Búsqueda */}
+                <div className="relative flex-1 max-w-md">
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar por nombre, ID, empresa o cargo..."
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm border outline-none transition-all ${
+                      isLight
+                        ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] placeholder-[#706044] focus:border-[#DDB967]'
+                        : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] placeholder-[#51432A] focus:border-[#C9A34E]'
+                    }`}
+                  />
+                </div>
 
-          {/* Filtros de Estado */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl border overflow-x-auto text-xs shrink-0 bg-black/20 border-[#51432A]/40">
-            <button
-              onClick={() => setStatusFilter('ALL')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                statusFilter === 'ALL'
-                  ? isLight
-                    ? 'bg-[#DDB967] text-[#211A0E]'
-                    : 'bg-[#C9A34E] text-[#17120A]'
-                  : 'opacity-70 hover:opacity-100'
-              }`}
-            >
-              Todos ({stats.total})
-            </button>
-            <button
-              onClick={() => setStatusFilter(GUEST_STATUS.CONFIRMED)}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                statusFilter === GUEST_STATUS.CONFIRMED
-                  ? 'bg-emerald-600 text-white'
-                  : 'opacity-70 hover:opacity-100'
-              }`}
-            >
-              Confirmados ({stats.confirmedCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter(GUEST_STATUS.PENDING)}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                statusFilter === GUEST_STATUS.PENDING
-                  ? 'bg-amber-600 text-white'
-                  : 'opacity-70 hover:opacity-100'
-              }`}
-            >
-              Pendientes ({stats.pendingCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter(GUEST_STATUS.DECLINED)}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                statusFilter === GUEST_STATUS.DECLINED
-                  ? 'bg-rose-600 text-white'
-                  : 'opacity-70 hover:opacity-100'
-              }`}
-            >
-              Declinados ({stats.declinedCount})
-            </button>
-          </div>
-        </div>
+                {/* Selector de Empresa */}
+                <div className="relative shrink-0">
+                  <Building2 className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 opacity-60 pointer-events-none text-[#C9A34E]" />
+                  <select
+                    value={companyFilter}
+                    onChange={(e) => setCompanyFilter(e.target.value)}
+                    className={`w-full sm:w-auto pl-8 pr-8 py-2.5 rounded-xl text-xs sm:text-sm border outline-none transition-all cursor-pointer ${
+                      isLight
+                        ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] focus:border-[#DDB967]'
+                        : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] focus:border-[#C9A34E]'
+                    }`}
+                  >
+                    <option value="ALL">Todas las empresas ({companies.length})</option>
+                    {companies.map((comp) => (
+                      <option key={comp} value={comp}>
+                        {comp}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-        {/* 4. TABLA ORDENADA Y RESPONSIVA */}
-        <div
-          className={`w-full rounded-2xl border overflow-hidden backdrop-blur-md shadow-2xl ${
-            isLight ? 'bg-[#33312C]/90 border-[#706044]' : 'bg-[#151515]/90 border-[#51432A]'
-          }`}
-        >
-          {/* Vista Tabla Desktop & Tablet */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs sm:text-sm">
-              <thead>
-                <tr
-                  className={`border-b text-[11px] uppercase tracking-wider font-bold ${
-                    isLight
-                      ? 'bg-[#242320]/60 border-[#706044]/50 text-[#DDB967]'
-                      : 'bg-[#080808]/60 border-[#51432A]/50 text-[#C9A34E]'
+              {/* Filtros de Estado */}
+              <div className="flex items-center gap-1.5 p-1 rounded-xl border overflow-x-auto text-xs shrink-0 bg-black/20 border-[#51432A]/40">
+                <button
+                  onClick={() => setStatusFilter('ALL')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    statusFilter === 'ALL'
+                      ? isLight
+                        ? 'bg-[#DDB967] text-[#211A0E]'
+                        : 'bg-[#C9A34E] text-[#17120A]'
+                      : 'opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <th className="py-3.5 px-4">ID</th>
-                  <th className="py-3.5 px-4">Invitado</th>
-                  <th className="py-3.5 px-4 text-center">Pases</th>
-                  <th className="py-3.5 px-4">Estado</th>
-                  <th className="py-3.5 px-4">Confirmación</th>
-                  <th className="py-3.5 px-4 text-center">Cambiar Estado</th>
-                  <th className="py-3.5 px-4 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
+                  Todos ({stats.total})
+                </button>
+                <button
+                  onClick={() => setStatusFilter(GUEST_STATUS.CONFIRMED)}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    statusFilter === GUEST_STATUS.CONFIRMED
+                      ? 'bg-emerald-600 text-white'
+                      : 'opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  Confirmados ({stats.confirmedCount})
+                </button>
+                <button
+                  onClick={() => setStatusFilter(GUEST_STATUS.PENDING)}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    statusFilter === GUEST_STATUS.PENDING
+                      ? 'bg-amber-600 text-white'
+                      : 'opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  Pendientes ({stats.pendingCount})
+                </button>
+                <button
+                  onClick={() => setStatusFilter(GUEST_STATUS.DECLINED)}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    statusFilter === GUEST_STATUS.DECLINED
+                      ? 'bg-rose-600 text-white'
+                      : 'opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  Declinados ({stats.declinedCount})
+                </button>
+              </div>
+            </div>
+
+            {/* Contador de resultados filtrados */}
+            <div className="text-[11px] opacity-65 mb-2.5 px-1">
+              Mostrando {filteredGuests.length} de {guests.length} invitados
+            </div>
+
+            {/* 4. TABLA ORDENADA Y RESPONSIVA */}
+            <div
+              className={`w-full rounded-2xl border overflow-hidden backdrop-blur-md shadow-2xl ${
+                isLight ? 'bg-[#33312C]/90 border-[#706044]' : 'bg-[#151515]/90 border-[#51432A]'
+              }`}
+            >
+              {/* Vista Tabla Desktop & Tablet */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                  <thead>
+                    <tr
+                      className={`border-b text-[11px] uppercase tracking-wider font-bold ${
+                        isLight
+                          ? 'bg-[#242320]/60 border-[#706044]/50 text-[#DDB967]'
+                          : 'bg-[#080808]/60 border-[#51432A]/50 text-[#C9A34E]'
+                      }`}
+                    >
+                      <th className="py-3.5 px-4">ID</th>
+                      <th className="py-3.5 px-4">Invitado / Cargo</th>
+                      <th className="py-3.5 px-4">Empresa</th>
+                      <th className="py-3.5 px-4 text-center">Pases</th>
+                      <th className="py-3.5 px-4">Estado</th>
+                      <th className="py-3.5 px-4">Confirmación</th>
+                      <th className="py-3.5 px-4 text-center">Cambiar Estado</th>
+                      <th className="py-3.5 px-4 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {filteredGuests.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" className="py-12 text-center opacity-60">
+                          No se encontraron invitados con los filtros seleccionados.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredGuests.map((guest) => {
+                        const isConfirmed = guest.status === GUEST_STATUS.CONFIRMED;
+                        const isDeclined = guest.status === GUEST_STATUS.DECLINED;
+                        const isPending = guest.status === GUEST_STATUS.PENDING;
+
+                        return (
+                          <tr
+                            key={guest.id}
+                            className={`transition-colors ${
+                              isLight ? 'hover:bg-white/5' : 'hover:bg-white/[0.03]'
+                            }`}
+                          >
+                            {/* ID */}
+                            <td className="py-3 px-4 font-mono font-bold tracking-wider">
+                              <span
+                                className={`px-2 py-0.5 rounded-md text-xs ${
+                                  isLight ? 'bg-black/30 text-[#FFF0CD]' : 'bg-black/40 text-[#F0DDA7]'
+                                }`}
+                              >
+                                {guest.id}
+                              </span>
+                            </td>
+
+                            {/* Nombre y Cargo */}
+                            <td className="py-3 px-4">
+                              <span className="font-semibold block">{guest.name}</span>
+                              {guest.cargo && (
+                                <span className="text-[11px] opacity-65 block">{guest.cargo}</span>
+                              )}
+                            </td>
+
+                            {/* Empresa */}
+                            <td className="py-3 px-4">
+                              <span className="text-xs font-medium text-[#DDB967] block">
+                                {guest.empresa || '—'}
+                              </span>
+                            </td>
+
+                            {/* Pases */}
+                            <td className="py-3 px-4 text-center">
+                              <span
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                                  guest.passes > 1
+                                    ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                                    : 'bg-white/5 opacity-80'
+                                }`}
+                              >
+                                <Ticket className="w-3 h-3" />
+                                <span>{guest.passes}</span>
+                              </span>
+                            </td>
+
+                            {/* Estado */}
+                            <td className="py-3 px-4">
+                              {isConfirmed && (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-500/40">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span>Confirmado</span>
+                                </span>
+                              )}
+                              {isPending && (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-950/60 text-amber-300 border border-amber-500/40">
+                                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                                  <span>Pendiente</span>
+                                </span>
+                              )}
+                              {isDeclined && (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-950/60 text-rose-300 border border-rose-500/40">
+                                  <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                                  <span>No Asistirá</span>
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Fecha */}
+                            <td className="py-3 px-4 opacity-70 text-xs">{guest.confirmedAt || '—'}</td>
+
+                            {/* Botones para cambiar estado directamente */}
+                            <td className="py-3 px-4 text-center">
+                              <div className="inline-flex items-center gap-1 p-0.5 rounded-lg bg-black/30 border border-white/5">
+                                <button
+                                  title="Marcar como Confirmado"
+                                  onClick={() => handleStatusChange(guest.id, GUEST_STATUS.CONFIRMED)}
+                                  className={`p-1.5 rounded-md transition-all cursor-pointer ${
+                                    isConfirmed
+                                      ? 'bg-emerald-600 text-white'
+                                      : 'opacity-50 hover:opacity-100 hover:text-emerald-400'
+                                  }`}
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  title="Marcar como Pendiente"
+                                  onClick={() => handleStatusChange(guest.id, GUEST_STATUS.PENDING)}
+                                  className={`p-1.5 rounded-md transition-all cursor-pointer ${
+                                    isPending
+                                      ? 'bg-amber-600 text-white'
+                                      : 'opacity-50 hover:opacity-100 hover:text-amber-400'
+                                  }`}
+                                >
+                                  <Clock className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  title="Marcar como No Asistirá"
+                                  onClick={() => handleStatusChange(guest.id, GUEST_STATUS.DECLINED)}
+                                  className={`p-1.5 rounded-md transition-all cursor-pointer ${
+                                    isDeclined
+                                      ? 'bg-rose-600 text-white'
+                                      : 'opacity-50 hover:opacity-100 hover:text-rose-400'
+                                  }`}
+                                >
+                                  <XCircle className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+
+                            {/* Acciones: Copiar Link y Abrir */}
+                            <td className="py-3 px-4 text-right">
+                              <div className="inline-flex items-center gap-2">
+                                <button
+                                  onClick={() => handleCopyLink(guest.id)}
+                                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                                    copiedId === guest.id
+                                      ? 'bg-emerald-600 text-white border-emerald-500'
+                                      : isLight
+                                      ? 'bg-[#242320] border-[#706044] hover:border-[#DDB967]'
+                                      : 'bg-[#080808] border-[#51432A] hover:border-[#C9A34E]'
+                                  }`}
+                                >
+                                  {copiedId === guest.id ? (
+                                    <>
+                                      <Check className="w-3 h-3" />
+                                      <span>¡Copiado!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3 h-3 opacity-70" />
+                                      <span>Copiar Link</span>
+                                    </>
+                                  )}
+                                </button>
+
+                                <a
+                                  href={`/?id=${encodeURIComponent(guest.id)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="Abrir invitación"
+                                  className="p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-colors"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Vista Móvil (Tarjetas Responsivas) */}
+              <div className="md:hidden divide-y divide-white/10">
                 {filteredGuests.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="py-12 text-center opacity-60">
-                      No se encontraron invitados con los filtros seleccionados.
-                    </td>
-                  </tr>
+                  <div className="py-8 text-center opacity-60 text-xs">
+                    No se encontraron invitados.
+                  </div>
                 ) : (
                   filteredGuests.map((guest) => {
                     const isConfirmed = guest.status === GUEST_STATUS.CONFIRMED;
@@ -402,130 +657,91 @@ export default function AdminDashboard() {
                     const isPending = guest.status === GUEST_STATUS.PENDING;
 
                     return (
-                      <tr
-                        key={guest.id}
-                        className={`transition-colors ${
-                          isLight ? 'hover:bg-white/5' : 'hover:bg-white/[0.03]'
-                        }`}
-                      >
-                        {/* ID */}
-                        <td className="py-3 px-4 font-mono font-bold tracking-wider">
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-xs ${
-                              isLight ? 'bg-black/30 text-[#FFF0CD]' : 'bg-black/40 text-[#F0DDA7]'
-                            }`}
-                          >
-                            {guest.id}
+                      <div key={guest.id} className="p-4 flex flex-col gap-2.5">
+                        {/* Header de la tarjeta */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-black/40 text-[#F0DDA7]">
+                                {guest.id}
+                              </span>
+                              {guest.empresa && (
+                                <span className="text-[10px] font-semibold text-[#DDB967] uppercase tracking-wider">
+                                  {guest.empresa}
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="font-semibold text-sm">{guest.name}</h3>
+                            {guest.cargo && (
+                              <span className="text-[11px] opacity-65 block mt-0.5">{guest.cargo}</span>
+                            )}
+                          </div>
+                          <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-white/10 font-mono">
+                            {guest.passes} {guest.passes > 1 ? 'pases' : 'pase'}
                           </span>
-                        </td>
+                        </div>
 
-                        {/* Nombre del Invitado */}
-                        <td className="py-3 px-4">
-                          <span className="font-semibold block">{guest.name}</span>
-                        </td>
+                        {/* Estado y Fecha */}
+                        <div className="flex items-center justify-between text-xs">
+                          <div>
+                            {isConfirmed && (
+                              <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Confirmado
+                              </span>
+                            )}
+                            {isPending && (
+                              <span className="inline-flex items-center gap-1 text-amber-400 font-semibold">
+                                <Clock className="w-3.5 h-3.5" /> Pendiente
+                              </span>
+                            )}
+                            {isDeclined && (
+                              <span className="inline-flex items-center gap-1 text-rose-400 font-semibold">
+                                <XCircle className="w-3.5 h-3.5" /> No Asistirá
+                              </span>
+                            )}
+                          </div>
+                          <span className="opacity-50 text-[11px]">{guest.confirmedAt || 'Sin confirmar'}</span>
+                        </div>
 
-                        {/* Pases */}
-                        <td className="py-3 px-4 text-center">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                              guest.passes > 1
-                                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                                : 'bg-white/5 opacity-80'
-                            }`}
-                          >
-                            <Ticket className="w-3 h-3" />
-                            <span>{guest.passes}</span>
-                          </span>
-                        </td>
-
-                        {/* Estado */}
-                        <td className="py-3 px-4">
-                          {isConfirmed && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-500/40">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>Confirmado</span>
-                            </span>
-                          )}
-                          {isPending && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-950/60 text-amber-300 border border-amber-500/40">
-                              <Clock className="w-3.5 h-3.5 text-amber-400" />
-                              <span>Pendiente</span>
-                            </span>
-                          )}
-                          {isDeclined && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-950/60 text-rose-300 border border-rose-500/40">
-                              <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                              <span>No Asistirá</span>
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Fecha */}
-                        <td className="py-3 px-4 opacity-70 text-xs">
-                          {guest.confirmedAt || '—'}
-                        </td>
-
-                        {/* Botones para cambiar estado directamente */}
-                        <td className="py-3 px-4 text-center">
-                          <div className="inline-flex items-center gap-1 p-0.5 rounded-lg bg-black/30 border border-white/5">
+                        {/* Acciones móviles */}
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+                          <div className="flex items-center gap-1 bg-black/30 p-1 rounded-lg border border-white/5">
                             <button
-                              title="Marcar como Confirmado"
                               onClick={() => handleStatusChange(guest.id, GUEST_STATUS.CONFIRMED)}
-                              className={`p-1.5 rounded-md transition-all cursor-pointer ${
-                                isConfirmed
-                                  ? 'bg-emerald-600 text-white'
-                                  : 'opacity-50 hover:opacity-100 hover:text-emerald-400'
-                              }`}
+                              className={`p-1.5 rounded text-xs ${isConfirmed ? 'bg-emerald-600 text-white' : 'opacity-40'}`}
                             >
                               <Check className="w-3.5 h-3.5" />
                             </button>
                             <button
-                              title="Marcar como Pendiente"
                               onClick={() => handleStatusChange(guest.id, GUEST_STATUS.PENDING)}
-                              className={`p-1.5 rounded-md transition-all cursor-pointer ${
-                                isPending
-                                  ? 'bg-amber-600 text-white'
-                                  : 'opacity-50 hover:opacity-100 hover:text-amber-400'
-                              }`}
+                              className={`p-1.5 rounded text-xs ${isPending ? 'bg-amber-600 text-white' : 'opacity-40'}`}
                             >
                               <Clock className="w-3.5 h-3.5" />
                             </button>
                             <button
-                              title="Marcar como No Asistirá"
                               onClick={() => handleStatusChange(guest.id, GUEST_STATUS.DECLINED)}
-                              className={`p-1.5 rounded-md transition-all cursor-pointer ${
-                                isDeclined
-                                  ? 'bg-rose-600 text-white'
-                                  : 'opacity-50 hover:opacity-100 hover:text-rose-400'
-                              }`}
+                              className={`p-1.5 rounded text-xs ${isDeclined ? 'bg-rose-600 text-white' : 'opacity-40'}`}
                             >
                               <XCircle className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                        </td>
 
-                        {/* Acciones: Copiar Link y Abrir */}
-                        <td className="py-3 px-4 text-right">
-                          <div className="inline-flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => handleCopyLink(guest.id)}
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${
                                 copiedId === guest.id
                                   ? 'bg-emerald-600 text-white border-emerald-500'
-                                  : isLight
-                                  ? 'bg-[#242320] border-[#706044] hover:border-[#DDB967]'
-                                  : 'bg-[#080808] border-[#51432A] hover:border-[#C9A34E]'
+                                  : 'bg-black/30 border-white/10'
                               }`}
                             >
                               {copiedId === guest.id ? (
                                 <>
-                                  <Check className="w-3 h-3" />
-                                  <span>¡Copiado!</span>
+                                  <Check className="w-3 h-3" /> <span>¡Copiado!</span>
                                 </>
                               ) : (
                                 <>
-                                  <Copy className="w-3 h-3 opacity-70" />
-                                  <span>Copiar Link</span>
+                                  <Copy className="w-3 h-3" /> <span>Link</span>
                                 </>
                               )}
                             </button>
@@ -535,119 +751,20 @@ export default function AdminDashboard() {
                               target="_blank"
                               rel="noopener noreferrer"
                               title="Abrir invitación"
-                              className="p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-colors"
+                              className="p-1.5 rounded-lg border border-white/10 opacity-70 hover:opacity-100"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
                           </div>
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     );
                   })
                 )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Vista Móvil (Tarjetas Responsivas) */}
-          <div className="md:hidden divide-y divide-white/10">
-            {filteredGuests.length === 0 ? (
-              <div className="py-8 text-center opacity-60 text-xs">
-                No se encontraron invitados.
               </div>
-            ) : (
-              filteredGuests.map((guest) => {
-                const isConfirmed = guest.status === GUEST_STATUS.CONFIRMED;
-                const isDeclined = guest.status === GUEST_STATUS.DECLINED;
-                const isPending = guest.status === GUEST_STATUS.PENDING;
-
-                return (
-                  <div key={guest.id} className="p-4 flex flex-col gap-3">
-                    {/* Header de la tarjeta */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-black/40 text-[#F0DDA7] mr-2">
-                          {guest.id}
-                        </span>
-                        <h3 className="font-semibold text-sm inline">{guest.name}</h3>
-                      </div>
-                      <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-white/10 font-mono">
-                        {guest.passes} {guest.passes > 1 ? 'pases' : 'pase'}
-                      </span>
-                    </div>
-
-                    {/* Estado y Fecha */}
-                    <div className="flex items-center justify-between text-xs">
-                      <div>
-                        {isConfirmed && (
-                          <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Confirmado
-                          </span>
-                        )}
-                        {isPending && (
-                          <span className="inline-flex items-center gap-1 text-amber-400 font-semibold">
-                            <Clock className="w-3.5 h-3.5" /> Pendiente
-                          </span>
-                        )}
-                        {isDeclined && (
-                          <span className="inline-flex items-center gap-1 text-rose-400 font-semibold">
-                            <XCircle className="w-3.5 h-3.5" /> No Asistirá
-                          </span>
-                        )}
-                      </div>
-                      <span className="opacity-50 text-[11px]">{guest.confirmedAt || 'Sin confirmar'}</span>
-                    </div>
-
-                    {/* Acciones móviles */}
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
-                      {/* Botones de cambio rápido */}
-                      <div className="flex items-center gap-1 bg-black/30 p-1 rounded-lg border border-white/5">
-                        <button
-                          onClick={() => handleStatusChange(guest.id, GUEST_STATUS.CONFIRMED)}
-                          className={`p-1.5 rounded text-xs ${isConfirmed ? 'bg-emerald-600 text-white' : 'opacity-40'}`}
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange(guest.id, GUEST_STATUS.PENDING)}
-                          className={`p-1.5 rounded text-xs ${isPending ? 'bg-amber-600 text-white' : 'opacity-40'}`}
-                        >
-                          <Clock className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange(guest.id, GUEST_STATUS.DECLINED)}
-                          className={`p-1.5 rounded text-xs ${isDeclined ? 'bg-rose-600 text-white' : 'opacity-40'}`}
-                        >
-                          <XCircle className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      {/* Botón copiar link */}
-                      <button
-                        onClick={() => handleCopyLink(guest.id)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${
-                          copiedId === guest.id
-                            ? 'bg-emerald-600 text-white border-emerald-500'
-                            : 'bg-black/30 border-white/10'
-                        }`}
-                      >
-                        {copiedId === guest.id ? (
-                          <>
-                            <Check className="w-3 h-3" /> <span>¡Copiado!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3" /> <span>Link</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+            </div>
+          </>
+        )}
 
         {/* Footer Informativo */}
         <div className="mt-6 text-center text-xs opacity-60">
@@ -657,4 +774,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-

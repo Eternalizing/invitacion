@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { eventData } from '../../data/eventData';
-import { Clock, Church, GlassWater, Sparkles, Moon } from 'lucide-react';
+import { getEventData } from '../../data/eventData';
+import { Clock, Church, GlassWater, Sparkles, Moon, Utensils } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import GlowingCard from '../common/GlowingCard';
 
-/**
- * Calcula las partes numéricas de tiempo (Días, Horas, Minutos, Segundos)
- */
 function calcTimeParts(diffMs) {
   const diff = Math.max(0, diffMs);
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -28,12 +25,9 @@ function calcTimeParts(diffMs) {
   };
 }
 
-/**
- * Calcula la etapa activa del evento en base a la línea de tiempo.
- * Soporta simulación mediante parámetro en la URL (?stage=misa, ?stage=proximamente, ?stage=recepcion, ?stage=fin).
- */
-function calculateTimelineState() {
+function calculateTimelineState(isChristmas = false) {
   let now = Date.now();
+  const activeData = getEventData(isChristmas);
 
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
@@ -41,37 +35,65 @@ function calculateTimelineState() {
     if (simStage) {
       const lower = simStage.toLowerCase();
       if (lower === 'misa' || lower === 'proximamente' || lower === 'recepcion-previa') {
-        // Simula estar durante la Misa de 1 hora y 30 min (5:30 p. m. a 7:00 p. m.), previa a la recepción (ej. 6:15 p. m.)
         now = new Date('2026-11-28T18:15:00').getTime();
       } else if (lower === 'recepcion' || lower === 'fiesta') {
-        // Simula estar durante la Recepción (ej. 7:30 p. m.)
         now = new Date('2026-11-28T19:30:00').getTime();
+      } else if (lower === 'cena') {
+        now = new Date('2026-11-28T21:30:00').getTime();
       } else if (lower === 'conclusion' || lower === 'fin' || lower === 'gracias') {
-        // Simula estar pasada la medianoche (12:15 a. m. del 29)
         now = new Date('2026-11-29T00:15:00').getTime();
       }
     }
   }
 
-  const tMisa = new Date(eventData.scheduleTimestamps?.misa || eventData.eventTimestamp || '2026-11-28T17:30:00').getTime();
-  const tRecepcion = new Date(eventData.scheduleTimestamps?.recepcion || '2026-11-28T19:00:00').getTime();
-  const tConclusion = new Date(eventData.scheduleTimestamps?.conclusion || '2026-11-29T00:00:00').getTime();
+  const tMisa = new Date(activeData.scheduleTimestamps?.misa || '2026-11-28T17:30:00').getTime();
+  const tRecepcion = new Date(activeData.scheduleTimestamps?.recepcion || '2026-11-28T19:00:00').getTime();
+  const tCena = new Date(activeData.scheduleTimestamps?.cena || '2026-11-28T21:00:00').getTime();
+  const tConclusion = new Date(activeData.scheduleTimestamps?.conclusion || '2026-11-29T00:00:00').getTime();
 
-  // 1. Etapa de Conclusión: A partir de las 12:00 a. m. (medianoche)
+  // 1. Etapa de Conclusión (12:00 a. m.)
   if (now >= tConclusion) {
     return {
       stage: 'CONCLUSION',
       title: 'GRACIAS POR ASISTIR',
       floatingLabel: 'GRACIAS POR ASISTIR',
-      subtitle: 'Gala Conmemorativa 50.º Aniversario',
+      subtitle: isChristmas
+        ? '50.º Aniversario & Tradicional Cena Navideña'
+        : 'Gala Conmemorativa 50.º Aniversario',
       iconType: 'sparkles',
       isFinished: true,
       timeBlocks: [],
     };
   }
 
-  // 2. Etapa de Recepción: Desde las 7:00 p. m. hasta las 12:00 a. m. -> Cuenta regresiva hacia la conclusión
+  // 2. Etapa de Cena Navideña (9:00 p. m. a 12:00 a. m. para Empleados)
+  if (isChristmas && now >= tCena) {
+    const diff = tConclusion - now;
+    return {
+      stage: 'CENA_NAVIDENA',
+      title: 'CENA NAVIDEÑA EN CURSO',
+      floatingLabel: 'CENA NAVIDEÑA',
+      subtitle: 'Tiempo restante para la Conclusión (12:00 a. m.)',
+      iconType: 'cena',
+      isFinished: false,
+      ...calcTimeParts(diff),
+    };
+  }
+
+  // 3. Etapa de Recepción (7:00 p. m.)
   if (now >= tRecepcion) {
+    if (isChristmas) {
+      const diff = tCena - now;
+      return {
+        stage: 'PROXIMAMENTE_CENA',
+        title: 'PRÓXIMAMENTE CENA NAVIDEÑA',
+        floatingLabel: 'PRÓX. CENA 9 PM',
+        subtitle: 'Recepción en curso • Tiempo restante para la Cena Navideña (9:00 p. m.)',
+        iconType: 'cena',
+        isFinished: false,
+        ...calcTimeParts(diff),
+      };
+    }
     const diff = tConclusion - now;
     return {
       stage: 'RECEPCION',
@@ -84,7 +106,7 @@ function calculateTimelineState() {
     };
   }
 
-  // 3. Etapa Misa (1 hora y 30 min: 5:30 p. m. a 7:00 p. m.) hasta la Recepción: "PRÓXIMAMENTE RECEPCIÓN"
+  // 4. Etapa Misa (5:30 p. m. a 7:00 p. m.)
   if (now >= tMisa) {
     const diff = tRecepcion - now;
     return {
@@ -98,39 +120,37 @@ function calculateTimelineState() {
     };
   }
 
-  // 4. Etapa Pre-Evento: Antes de las 5:30 p. m. -> Cuenta regresiva hacia la misa
+  // 5. Etapa Pre-Evento (Antes de las 5:30 p. m.)
   const diff = tMisa - now;
   return {
     stage: 'PRE_EVENT',
     title: 'CUENTA REGRESIVA',
     floatingLabel: 'FALTAN',
-    subtitle: 'Primer evento (Misa 5:30 p. m.)',
+    subtitle: isChristmas
+      ? 'Primer evento (Misa 5:30 p. m.) • Cena Navideña 9:00 p. m.'
+      : 'Primer evento (Misa 5:30 p. m.)',
     iconType: 'clock',
     isFinished: false,
     ...calcTimeParts(diff),
   };
 }
 
-/**
- * Hook para mantener sincronizado el estado dinámico del cronómetro y etapas
- */
-export function useEventTimeline() {
-  const [timeline, setTimeline] = useState(() => calculateTimelineState());
+export function useEventTimeline(isChristmas = false) {
+  const [timeline, setTimeline] = useState(() => calculateTimelineState(isChristmas));
 
   useEffect(() => {
     const update = () => {
-      setTimeline(calculateTimelineState());
+      setTimeline(calculateTimelineState(isChristmas));
     };
 
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isChristmas]);
 
   return timeline;
 }
 
-// Helper para renderizar el icono de la etapa correspondiente con desvanecimiento suave
 function renderTimelineIcon(iconType, iconClass) {
   const animatedClass = `${iconClass} animate-icon-fadeIn transition-all duration-500`;
   switch (iconType) {
@@ -138,6 +158,8 @@ function renderTimelineIcon(iconType, iconClass) {
       return <Church key="church" className={animatedClass} />;
     case 'glass':
       return <GlassWater key="glass" className={animatedClass} />;
+    case 'cena':
+      return <Utensils key="cena" className={animatedClass} />;
     case 'sparkles':
       return <Sparkles key="sparkles" className={animatedClass} />;
     case 'moon':
@@ -148,13 +170,21 @@ function renderTimelineIcon(iconType, iconClass) {
   }
 }
 
-// 1. Componente del Contador dentro de la página (Dinámico por programa)
-export default function Countdown() {
-  const timeline = useEventTimeline();
+const candyStripeStyle = {
+  backgroundImage:
+    'repeating-linear-gradient(45deg, #D42426 0px, #D42426 10px, #FFFFFF 10px, #FFFFFF 20px, #991B1B 20px, #991B1B 30px, #FFF1F2 30px, #FFF1F2 40px)',
+  backgroundSize: '56.57px 56.57px',
+};
+
+// 1. Componente del Contador dentro de la página
+export default function Countdown({ isChristmas = false }) {
+  const timeline = useEventTimeline(isChristmas);
   const { isLight } = useTheme();
 
   const iconClass = `w-5 h-5 shrink-0 filter ${
-    isLight
+    isChristmas
+      ? 'text-[#FF4D4F] drop-shadow-[0_2px_8px_rgba(212,36,38,0.55)]'
+      : isLight
       ? 'text-[#DDB967] drop-shadow-[0_2px_6px_rgba(221,185,103,0.4)]'
       : 'text-[#C9A34E] drop-shadow-[0_2px_6px_rgba(201,163,78,0.4)]'
   }`;
@@ -162,12 +192,16 @@ export default function Countdown() {
   return (
     <GlowingCard
       className="w-full my-4"
-      innerClassName="p-5 sm:p-6 text-center"
+      isChristmas={isChristmas}
+      variant={isChristmas ? 'candy' : 'default'}
+      innerClassName={`p-5 sm:p-6 text-center ${
+        isChristmas ? 'bg-gradient-to-b from-[#1F0A0C]/95 via-[#150809]/95 to-[#1A090B]/95' : ''
+      }`}
     >
-      {/* Título e Ícono dinámicos según el programa activo */}
+      {/* Título e Ícono dinámicos */}
       <div
         className={`inline-flex items-center gap-2 text-xs sm:text-sm uppercase tracking-[0.25em] font-bold mb-1.5 ${
-          isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
+          isChristmas ? 'text-[#FFE4E6]' : isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
         }`}
       >
         {renderTimelineIcon(timeline.iconType, iconClass)}
@@ -177,13 +211,12 @@ export default function Countdown() {
       {/* Subtítulo informativo */}
       <p
         className={`text-[11px] sm:text-xs tracking-wider mb-4 font-medium ${
-          isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
+          isChristmas ? 'text-[#FECDD3]/90' : isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
         }`}
       >
         {timeline.subtitle}
       </p>
 
-      {/* Si ya concluyó el evento, muestra mensaje de agradecimiento */}
       {timeline.isFinished ? (
         <div className="flex flex-col items-center py-4 px-3 animate-fadeIn">
           <div className="w-14 h-14 rounded-full bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-[#C9A34E] mb-3 shadow-[0_0_25px_rgba(201,163,78,0.3)]">
@@ -202,33 +235,50 @@ export default function Countdown() {
           </p>
         </div>
       ) : (
-        /* Bloques numéricos de cuenta regresiva hacia el siguiente programa */
+        /* Bloques numéricos de cuenta regresiva (con estilo caramelo rojo y blanco si es Navidad) */
         <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-sm mx-auto">
-          {timeline.timeBlocks.map((block, idx) => (
-            <div
-              key={idx}
-              className={`p-2 sm:p-3 rounded-2xl flex flex-col items-center justify-center transition-colors duration-500 ${
-                isLight
-                  ? 'bg-[#242320] border border-[#706044] shadow-inner'
-                  : 'bg-[#080808] border border-[#51432A] shadow-inner'
-              }`}
-            >
-              <span
-                className={`font-serif text-2xl sm:text-3xl font-bold ${
-                  isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
+          {timeline.timeBlocks.map((block, idx) =>
+            isChristmas ? (
+              <div
+                key={idx}
+                className="relative p-[2.5px] rounded-2xl overflow-hidden shadow-[0_6px_18px_rgba(212,36,38,0.35)] animate-candy-stripe"
+                style={candyStripeStyle}
+              >
+                <div className="bg-[#180709]/95 rounded-[calc(1rem-2.5px)] p-2 sm:p-3 flex flex-col items-center justify-center h-full shadow-inner">
+                  <span className="font-serif text-2xl sm:text-3xl font-bold text-white drop-shadow-[0_2px_10px_rgba(255,77,79,0.65)]">
+                    {String(block.value).padStart(2, '0')}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] font-montserrat font-bold tracking-widest mt-0.5 text-[#FDA4AF]">
+                    {block.label}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div
+                key={idx}
+                className={`p-2 sm:p-3 rounded-2xl flex flex-col items-center justify-center transition-colors duration-500 ${
+                  isLight
+                    ? 'bg-[#242320] border border-[#706044] shadow-inner'
+                    : 'bg-[#080808] border border-[#51432A] shadow-inner'
                 }`}
               >
-                {String(block.value).padStart(2, '0')}
-              </span>
-              <span
-                className={`text-[9px] sm:text-[10px] font-montserrat tracking-widest mt-0.5 ${
-                  isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
-                }`}
-              >
-                {block.label}
-              </span>
-            </div>
-          ))}
+                <span
+                  className={`font-serif text-2xl sm:text-3xl font-bold ${
+                    isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
+                  }`}
+                >
+                  {String(block.value).padStart(2, '0')}
+                </span>
+                <span
+                  className={`text-[9px] sm:text-[10px] font-montserrat tracking-widest mt-0.5 ${
+                    isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
+                  }`}
+                >
+                  {block.label}
+                </span>
+              </div>
+            )
+          )}
         </div>
       )}
     </GlowingCard>
@@ -236,8 +286,13 @@ export default function Countdown() {
 }
 
 // 2. Componente del Contador FLOTANTE (Dinámico por programa)
-export function FloatingCountdown({ isVisible = true, position = 'top', className = '' }) {
-  const timeline = useEventTimeline();
+export function FloatingCountdown({
+  isChristmas = false,
+  isVisible = true,
+  position = 'top',
+  className = '',
+}) {
+  const timeline = useEventTimeline(isChristmas);
   const { isLight } = useTheme();
 
   const blocks = [
@@ -261,80 +316,90 @@ export function FloatingCountdown({ isVisible = true, position = 'top', classNam
       className={`fixed left-1/2 -translate-x-1/2 z-40 max-w-[calc(100vw-1.5rem)] sm:max-w-[calc(100vw-2rem)] transition-all duration-500 ease-out select-none ${posClasses} ${className}`}
     >
       <div
-        className={`inline-flex items-center gap-2.5 sm:gap-4 px-4 py-2 sm:px-6 sm:py-3 rounded-full border-2 transition-all duration-500 backdrop-blur-md ${
-          isLight
-            ? 'bg-[#33312C]/95 border-[#706044] shadow-[0_12px_35px_rgba(0,0,0,0.7)]'
-            : 'bg-[#151515]/95 border-[#51432A] shadow-[0_12px_35px_rgba(0,0,0,0.9)]'
+        className={`rounded-full ${
+          isChristmas
+            ? 'p-[2.5px] shadow-[0_12px_35px_rgba(212,36,38,0.45)] animate-candy-stripe'
+            : ''
         }`}
+        style={isChristmas ? candyStripeStyle : undefined}
       >
-        {/* Si concluyó el evento */}
-        {timeline.isFinished ? (
-          <div
-            className={`flex items-center gap-2 px-2 py-0.5 ${
-              isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-            <span className="text-[11px] sm:text-xs font-montserrat font-extrabold tracking-widest uppercase whitespace-nowrap">
-              ¡GRACIAS POR ASISTIR!
-            </span>
-          </div>
-        ) : (
-          <>
-            {/* Label con ícono dinámico de la etapa */}
+        <div
+          className={`inline-flex items-center gap-2.5 sm:gap-4 px-4 py-2 sm:px-6 sm:py-3 rounded-full transition-all duration-500 backdrop-blur-md ${
+            isChristmas
+              ? 'bg-[#180709]/95 text-white'
+              : isLight
+              ? 'bg-[#33312C]/95 border-2 border-[#706044] shadow-[0_12px_35px_rgba(0,0,0,0.7)]'
+              : 'bg-[#151515]/95 border-2 border-[#51432A] shadow-[0_12px_35px_rgba(0,0,0,0.9)]'
+          }`}
+        >
+          {timeline.isFinished ? (
             <div
-              className={`flex items-center gap-1.5 sm:gap-2 border-r pr-2.5 sm:pr-4 ${
-                isLight ? 'border-[#706044]' : 'border-[#51432A]'
+              className={`flex items-center gap-2 px-2 py-0.5 ${
+                isChristmas ? 'text-[#FFE4E6]' : isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
               }`}
             >
-              {renderTimelineIcon(
-                timeline.iconType,
-                `w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`
-              )}
-              <span
-                className={`text-[10px] sm:text-xs font-montserrat font-extrabold tracking-widest uppercase whitespace-nowrap ${
-                  isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
-                }`}
-              >
-                {timeline.floatingLabel}
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+              <span className="text-[11px] sm:text-xs font-montserrat font-extrabold tracking-widest uppercase whitespace-nowrap">
+                ¡GRACIAS POR ASISTIR!
               </span>
             </div>
+          ) : (
+            <>
+              <div
+                className={`flex items-center gap-1.5 sm:gap-2 border-r pr-2.5 sm:pr-4 ${
+                  isChristmas ? 'border-rose-500/40' : isLight ? 'border-[#706044]' : 'border-[#51432A]'
+                }`}
+              >
+                {renderTimelineIcon(
+                  timeline.iconType,
+                  `w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${
+                    isChristmas ? 'text-[#FF4D4F]' : isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
+                  }`
+                )}
+                <span
+                  className={`text-[10px] sm:text-xs font-montserrat font-extrabold tracking-widest uppercase whitespace-nowrap ${
+                    isChristmas ? 'text-[#FFE4E6]' : isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'
+                  }`}
+                >
+                  {timeline.floatingLabel}
+                </span>
+              </div>
 
-            {/* Números de cuenta regresiva */}
-            <div className="flex items-center gap-1.5 sm:gap-3">
-              {blocks.map((b, idx) => (
-                <React.Fragment key={idx}>
-                  <div className="flex flex-col items-center min-w-[22px] sm:min-w-[32px]">
-                    <span
-                      className={`font-serif font-bold text-base sm:text-2xl leading-none tracking-tight ${
-                        isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
-                      }`}
-                    >
-                      {String(b.value || 0).padStart(2, '0')}
-                    </span>
-                    <span
-                      className={`text-[7px] sm:text-[9px] font-montserrat font-bold uppercase tracking-wider mt-0.5 ${
-                        isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
-                      }`}
-                    >
-                      {b.label}
-                    </span>
-                  </div>
+              <div className="flex items-center gap-1.5 sm:gap-3">
+                {blocks.map((b, idx) => (
+                  <React.Fragment key={idx}>
+                    <div className="flex flex-col items-center min-w-[22px] sm:min-w-[32px]">
+                      <span
+                        className={`font-serif font-bold text-base sm:text-2xl leading-none tracking-tight ${
+                          isChristmas ? 'text-white' : isLight ? 'text-[#FFF0CD]' : 'text-[#F0DDA7]'
+                        }`}
+                      >
+                        {String(b.value || 0).padStart(2, '0')}
+                      </span>
+                      <span
+                        className={`text-[7px] sm:text-[9px] font-montserrat font-bold uppercase tracking-wider mt-0.5 ${
+                          isChristmas ? 'text-[#FDA4AF]' : isLight ? 'text-[#C9C2B4]' : 'text-[#B8B3A8]'
+                        }`}
+                      >
+                        {b.label}
+                      </span>
+                    </div>
 
-                  {idx < blocks.length - 1 && (
-                    <span
-                      className={`font-bold text-xs sm:text-base -mt-2.5 self-center ${
-                        isLight ? 'text-[#DDB967]/70' : 'text-[#C9A34E]/70'
-                      }`}
-                    >
-                      :
-                    </span>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </>
-        )}
+                    {idx < blocks.length - 1 && (
+                      <span
+                        className={`font-bold text-xs sm:text-base -mt-2.5 self-center ${
+                          isChristmas ? 'text-[#FF4D4F]' : isLight ? 'text-[#DDB967]/70' : 'text-[#C9A34E]/70'
+                        }`}
+                      >
+                        :
+                      </span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -9,10 +9,11 @@ export const eventData = {
   // Cabecera
   tagline: "",
   heroSubtitle: "",
-  
+
   // Invitación Personal
   invitationText: {
     header: "INVITACIÓN PERSONAL",
+    tagline: "",
     honorText: "Tenemos el honor de invitarle a celebrar nuestro 50.º aniversario.",
     subText: "Cinco décadas de trayectoria, visión y compromiso.",
   },
@@ -73,8 +74,75 @@ export const eventData = {
     instagramUrl: "https://instagram.com/gruponemeroficial",
     confirmButtonText: "CONFIRMAR ASISTENCIA",
     confirmButtonTextFull: "CONFIRMAR MI ASISTENCIA",
-    googleFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSc_EXAMPLE/viewform", // Enlace de Google Form
+    googleFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSc_EXAMPLE/viewform",
     declineFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSc_EXAMPLE/viewform",
     instagram: "@gruponemeroficial",
   },
 };
+
+export const christmasEventData = {
+  logos: {
+    mainCompanyLogo: "/assets/logodorado-opt.png",
+    logo50Anos: "/assets/icono50anos-opt.png",
+    envelopeImage: "/assets/navidad/envelope-navidad.png",
+  },
+
+  tagline: "CENA NAVIDEÑA & 50.º ANIVERSARIO",
+  heroSubtitle: "Grupo Nemer",
+
+  // Invitación Personal Navideña para Empleados
+  invitationText: {
+    header: "INVITACIÓN PERSONAL • CENA NAVIDEÑA",
+    tagline: "",
+    honorText:
+      "Tenemos el honor de invitarle a celebrar nuestro 50.º aniversario, junto a nuestra tradicional cena navideña.",
+    subText:
+      "Una noche especial para compartir, agradecer y celebrar cinco décadas de historia, visión y compromiso.",
+  },
+
+  eventTimestamp: "2026-11-28T17:30:00",
+  scheduleTimestamps: {
+    misa: "2026-11-28T17:30:00",
+    recepcion: "2026-11-28T19:00:00",
+    cena: "2026-11-28T21:00:00",
+    conclusion: "2026-11-29T00:00:00",
+  },
+  date: eventData.date,
+
+  itineraryTitle: "Una noche mágica para recordar",
+  itineraryHeader: "PROGRAMA DEL EVENTO",
+  itinerary: [
+    {
+      time: "5:30 p. m.",
+      title: "Misa de Acción de Gracias",
+      icon: "church",
+      details: [],
+    },
+    {
+      time: "7:00 p. m.",
+      title: "Recepción",
+      icon: "glass",
+      details: [],
+    },
+    {
+      time: "9:00 p. m.",
+      title: "Cena Navideña",
+      icon: "cena",
+      details: ["Celebración especial navideña junto a la familia Grupo Nemer"],
+    },
+    {
+      time: "12:00 a. m.",
+      title: "Conclusión del evento",
+      icon: "moon",
+      details: [],
+    },
+  ],
+
+  location: eventData.location,
+  dressCode: eventData.dressCode,
+  rsvp: eventData.rsvp,
+};
+
+export function getEventData(isChristmas = false) {
+  return isChristmas ? christmasEventData : eventData;
+}

@@ -1,115 +1,76 @@
-import rawGuests from './guests.json';
+import { sha256Hex, decryptJson } from '../utils/vaultCrypto';
 
-/**
- * Normaliza y construye un índice optimizado para búsqueda rápida e insensible a mayúsculas/minúsculas.
- * Soporta tanto formato de Objeto { "ID": { name, passes } } como Array [ { id, name, passes } ].
- */
-function buildGuestIndex(data) {
-  const index = new Map();
+const GUEST_PEPPER = 'nemer50_gala_inv_v1_2026';
 
-  if (Array.isArray(data)) {
-    data.forEach((item) => {
-      if (item && item.id) {
-        const key = String(item.id).trim().toUpperCase();
-        index.set(key, {
-          id: String(item.id).trim(),
-          name: item.name || 'Invitado Especial',
-          passes: item.passes || 1,
-        });
-      }
-    });
-  } else if (typeof data === 'object' && data !== null) {
-    Object.entries(data).forEach(([rawId, val]) => {
-      const key = String(rawId).trim().toUpperCase();
-      if (typeof val === 'string') {
-        index.set(key, {
-          id: String(rawId).trim(),
-          name: val,
-          passes: 1,
-        });
-      } else if (val && typeof val === 'object') {
-        index.set(key, {
-          id: String(rawId).trim(),
-          name: val.name || 'Invitado Especial',
-          passes: val.passes || 1,
-        });
-      }
-    });
-  }
+// Hashes SHA-256 de los códigos secretos (nunca en texto plano en el código fuente)
+const SECRET_PORTAL_HASH = '786778b2e5c2856340e72c5c25bbcb5dac4bfd5ae7d5dd9589600dabb241841e';
+const SECRET_DASHBOARD_HASH = '7fc103a647f5b7599540cfc4f91e9e577dbf78479f71624e064a60da0db5356f';
 
-  return index;
+export function isSecretPortalId(id) {
+  if (!id || typeof id !== 'string') return false;
+  return sha256Hex(id.trim()) === SECRET_PORTAL_HASH;
 }
 
-const guestMap = buildGuestIndex(rawGuests);
+export function isSecretDashboardId(id) {
+  if (!id || typeof id !== 'string') return false;
+  return sha256Hex(id.trim()) === SECRET_DASHBOARD_HASH;
+}
 
 /**
- * Busca un invitado por su ID único.
- * Búsqueda inteligente:
- * - Insensible a mayúsculas/minúsculas (VIP01 == vip01)
- * - Elimina espacios sobrantes
- * - Si no encuentra directo, intenta normalizar guiones y símbolos
+ * Busca y descifra un invitado por su ID único desde su archivo cifrado individual.
+ * Nunca expone datos de otros invitados ni información sensible (teléfono, empresa, cargo).
  *
  * @param {string} searchId - Código o ID del invitado
- * @returns {{ id: string, name: string, passes: number } | null}
+ * @returns {Promise<{ id: string, name: string, passes: number } | null>}
  */
-export function findGuest(searchId) {
+export async function findGuestAsync(searchId) {
   if (!searchId || typeof searchId !== 'string') return null;
 
-  const clean = searchId.trim().toUpperCase();
+  const clean = searchId.trim().replace(/[-_\s]/g, '').toUpperCase();
   if (!clean) return null;
 
-  // 1. Coincidencia directa exacta o en mayúsculas
-  if (guestMap.has(clean)) {
-    return guestMap.get(clean);
-  }
+  try {
+    const lookupKey = `${clean}:${GUEST_PEPPER}`;
+    const fileHash = sha256Hex(lookupKey).slice(0, 24);
+    const res = await fetch(`/data/g/${fileHash}.json`, { cache: 'no-store' });
 
-  // 2. Coincidencia eliminando guiones o espacios (por ejemplo '839-214' vs '839214')
-  const stripped = clean.replace(/[-_\s]/g, '');
-  for (const [key, guest] of guestMap.entries()) {
-    if (key.replace(/[-_\s]/g, '') === stripped) {
-      return guest;
+    if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json') && !contentType.includes('text/plain')) {
+      return null;
     }
-  }
 
-  return null;
+    const envelope = await res.json();
+    const decoded = decryptJson(envelope, lookupKey);
+    if (!decoded || !decoded.n) return null;
+
+    return {
+      id: clean,
+      name: decoded.n,
+      passes: Number(decoded.p) || 1,
+      type: decoded.t || 'navidad',
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Utilidad para generar IDs aleatorios únicos de 6 dígitos (100000 a 999999)
- * Evita secuencias predecibles para máxima privacidad de cada invitado.
+ * Carga y descifra la bóveda administrativa completa usando el código secreto del panel.
  *
- * @param {number} count - Cantidad de IDs a generar
- * @param {Set<string>} existingIds - Conjunto de IDs ya asignados para evitar colisiones
- * @returns {string[]}
+ * @param {string} adminKey - Código secreto de 15 dígitos del panel de control
+ * @returns {Promise<Array<{ id: string, name: string, passes: number, empresa: string, cargo: string }> | null>}
  */
-export function generateRandom6DigitIds(count, existingIds = new Set()) {
-  const ids = new Set(existingIds);
-  const result = [];
+export async function loadAdminVaultAsync(adminKey) {
+  if (!adminKey || !isSecretDashboardId(adminKey)) return null;
 
-  while (result.length < count) {
-    const num = Math.floor(100000 + Math.random() * 900000);
-    const idStr = String(num);
-    if (!ids.has(idStr)) {
-      ids.add(idStr);
-      result.push(idStr);
-    }
+  try {
+    const res = await fetch('/data/vault.bin.json', { cache: 'no-store' });
+    if (!res.ok) return null;
+    const envelope = await res.json();
+    const decoded = decryptJson(envelope, adminKey.trim());
+    return Array.isArray(decoded) ? decoded : null;
+  } catch {
+    return null;
   }
-
-  return result;
 }
-
-/**
- * Código secreto de 15 dígitos para acceder al portal oculto de búsqueda/refuerzo.
- */
-export const SECRET_PORTAL_ID = '849201748291035';
-
-/**
- * Código secreto de 15 dígitos para acceder al panel de control y lista de invitaciones.
- */
-export const SECRET_DASHBOARD_ID = '739104826501934';
-
-/**
- * Devuelve la cantidad total de invitados registrados en el sistema.
- */
-export const totalGuests = guestMap.size;
-

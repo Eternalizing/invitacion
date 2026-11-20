@@ -1,78 +1,121 @@
-import { useState, useEffect, useCallback } from 'react';
-import { findGuest, SECRET_PORTAL_ID, SECRET_DASHBOARD_ID } from '../data/guests';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  findGuestAsync,
+  isSecretPortalId,
+  isSecretDashboardId,
+} from '../data/guests';
 
 /**
- * Hook para gestionar el acceso por ID único de invitado, portal oculto de 15 dígitos o dashboard.
- *
- * Busca el ID en los parámetros de la URL:
- *   ?id=001 (Invitación personalizada)
- *   ?id=849201748291035 (Portal Oculto de Búsqueda)
- *   ?id=739104826501934 (Panel de Control y Lista de Invitaciones)
- *
- * Retorna:
- * - guest: Objeto del invitado { id, name, passes } o null si no es válido
- * - isValid: booleano que indica si el ID es de un invitado registrado
- * - isSecretPortal: booleano que indica si se accedió al portal de búsqueda
- * - isAdminDashboard: booleano que indica si se accedió al panel de control
- * - attemptedId: el ID que se intentó buscar
- * - selectGuestById: función para validar y seleccionar un invitado manualmente
+ * Hook para gestionar el acceso por ID único de invitado (descifrado individual),
+ * diferenciando automáticamente entre Invitación de Gala e Invitación Navideña de Empleados.
  */
 export function useGuest() {
   const [guest, setGuest] = useState(null);
   const [isValid, setIsValid] = useState(false);
   const [isSecretPortal, setIsSecretPortal] = useState(false);
   const [isAdminDashboard, setIsAdminDashboard] = useState(false);
+  const [isChristmas, setIsChristmas] = useState(false);
+  const [adminKey, setAdminKey] = useState('');
   const [attemptedId, setAttemptedId] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const requestSeqRef = useRef(0);
 
-  const resolveGuest = useCallback((idCandidate) => {
+  const resolveGuest = useCallback(async (idCandidate, forcedType = null) => {
+    const seq = ++requestSeqRef.current;
+
     if (!idCandidate) {
+      if (forcedType === 'navidad') {
+        setGuest({
+          id: 'NAVIDAD',
+          name: 'Colaborador Grupo Nemer',
+          passes: 1,
+          type: 'navidad',
+        });
+        setIsValid(true);
+        setIsChristmas(true);
+        setIsSecretPortal(false);
+        setIsAdminDashboard(false);
+        setAdminKey('');
+        setAttemptedId('NAVIDAD');
+        setIsLoading(false);
+        return true;
+      }
+
       setGuest(null);
       setIsValid(false);
+      setIsChristmas(false);
       setIsSecretPortal(false);
       setIsAdminDashboard(false);
+      setAdminKey('');
       setAttemptedId('');
+      setIsLoading(false);
       return false;
     }
 
     const trimmed = String(idCandidate).trim();
     setAttemptedId(trimmed);
+    setIsLoading(true);
 
-    // 1. Verificación del ID secreto para el Panel de Control
-    if (trimmed === SECRET_DASHBOARD_ID) {
+    // 1. Verificación por hash del Panel de Control
+    if (isSecretDashboardId(trimmed)) {
+      if (seq !== requestSeqRef.current) return false;
       setGuest(null);
       setIsValid(false);
+      setIsChristmas(false);
       setIsSecretPortal(false);
       setIsAdminDashboard(true);
+      setAdminKey(trimmed);
+      setIsLoading(false);
       return true;
     }
 
-    // 2. Verificación del ID secreto para el Portal Oculto de Búsqueda
-    if (trimmed === SECRET_PORTAL_ID) {
+    // 2. Verificación por hash del Portal Oculto de Búsqueda
+    if (isSecretPortalId(trimmed)) {
+      if (seq !== requestSeqRef.current) return false;
       setGuest(null);
       setIsValid(false);
+      setIsChristmas(false);
       setIsSecretPortal(true);
       setIsAdminDashboard(false);
+      setAdminKey('');
+      setIsLoading(false);
       return true;
     }
 
     setIsSecretPortal(false);
     setIsAdminDashboard(false);
+    setAdminKey('');
 
-    // 3. Búsqueda de invitado registrado
-    const match = findGuest(trimmed);
+    // 3. Búsqueda y descifrado individual del invitado
+    const match = await findGuestAsync(trimmed);
+    if (seq !== requestSeqRef.current) return false;
+
     if (match) {
-      setGuest(match);
+      const resolvedType = forcedType || match.type || 'navidad';
+      setGuest({ ...match, type: resolvedType });
+      setIsChristmas(resolvedType === 'navidad');
       setIsValid(true);
+      setIsLoading(false);
       return true;
     } else {
       setGuest(null);
       setIsValid(false);
+      setIsChristmas(false);
+      setIsLoading(false);
       return false;
     }
   }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const tipoParam = (params.get('tipo') || params.get('type') || params.get('evento') || '').toLowerCase();
+    const forcedType =
+      tipoParam === 'gala'
+        ? 'gala'
+        : tipoParam === 'navidad' || params.has('navidad')
+        ? 'navidad'
+        : null;
+
     let idFromUrl =
       params.get('id') ||
       params.get('i') ||
@@ -82,7 +125,6 @@ export function useGuest() {
       params.get('admin') ||
       params.get('dashboard');
 
-    // Soporte adicional por hash (ej: /#VIP01 o /#id=VIP01)
     if (!idFromUrl && window.location.hash) {
       const hashStr = window.location.hash.replace(/^#\/?/, '');
       if (hashStr.includes('=')) {
@@ -97,23 +139,23 @@ export function useGuest() {
       }
     }
 
-    if (idFromUrl) {
-      resolveGuest(idFromUrl);
+    if (idFromUrl || forcedType === 'navidad') {
+      resolveGuest(idFromUrl, forcedType);
     } else {
       setGuest(null);
       setIsValid(false);
+      setIsChristmas(false);
       setIsSecretPortal(false);
       setIsAdminDashboard(false);
+      setAdminKey('');
       setAttemptedId('');
+      setIsLoading(false);
     }
   }, [resolveGuest]);
 
-  /**
-   * Permite validar e ingresar manualmente con un código desde el portal de refuerzo.
-   */
   const selectGuestById = useCallback(
-    (newId) => {
-      const success = resolveGuest(newId);
+    async (newId) => {
+      const success = await resolveGuest(newId);
       if (success) {
         try {
           const newUrl = new URL(window.location.href);
@@ -133,9 +175,12 @@ export function useGuest() {
     guestName: guest ? guest.name : '',
     passes: guest ? guest.passes : 1,
     isValid,
+    isChristmas,
     isSecretPortal,
     isAdminDashboard,
+    adminKey,
     attemptedId,
+    isLoading,
     selectGuestById,
   };
 }
