@@ -10,7 +10,6 @@ import {
   setAdminVaultGuests,
   setGuestStatus,
   subscribeToGuestStatus,
-  syncWithCloud,
   exportToCSV,
   GUEST_STATUS,
 } from '../../services/guestStatusService';
@@ -38,12 +37,9 @@ export default function AdminDashboard({ adminKey = '' }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL', 'pendiente', 'confirmado', 'declinado'
   const [companyFilter, setCompanyFilter] = useState('ALL');
-  const [isSyncing, setIsSyncing] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(true);
   const [vaultError, setVaultError] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
-  const [lastSyncText, setLastSyncText] = useState('Local');
-  const [needsCloudActivation, setNeedsCloudActivation] = useState(false);
 
   // Descifrar bóveda en memoria al abrir y suscribir a cambios reactivos
   useEffect(() => {
@@ -59,7 +55,6 @@ export default function AdminDashboard({ adminKey = '' }) {
         setAdminVaultGuests(decoded);
         setGuests(getAllGuestsWithStatus());
         setIsDecrypting(false);
-        handleSync();
       } else {
         setAdminVaultGuests([]);
         setGuests([]);
@@ -74,49 +69,12 @@ export default function AdminDashboard({ adminKey = '' }) {
       setGuests(getAllGuestsWithStatus());
     });
 
-    // Auto-sincronización cada 12s y al enfocar la pestaña para ver confirmaciones desde celulares al instante
-    const intervalId = window.setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        handleSync(true);
-      }
-    }, 12000);
-
-    const handleVisibilityOrFocus = () => {
-      if (document.visibilityState === 'visible') {
-        handleSync(true);
-      }
-    };
-
-    window.addEventListener('focus', handleVisibilityOrFocus);
-    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
-
     return () => {
       active = false;
       unsubscribe();
-      window.clearInterval(intervalId);
-      window.removeEventListener('focus', handleVisibilityOrFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
       setAdminVaultGuests([]);
     };
   }, [adminKey]);
-
-  const handleSync = async (silent = false) => {
-    const isSilent = silent === true;
-    if (!isSilent) setIsSyncing(true);
-    const res = await syncWithCloud();
-    if (!isSilent) setIsSyncing(false);
-    if (res.success) {
-      setNeedsCloudActivation(false);
-      setLastSyncText(
-        `Sincronizado (${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })})`
-      );
-    } else if (res.needsActivation) {
-      setNeedsCloudActivation(true);
-      setLastSyncText('Activar Nube');
-    } else if (!isSilent) {
-      setLastSyncText('Modo Local');
-    }
-  };
 
   const handleCopyLink = async (guestId) => {
     const link = getGuestInvitationUrl(guestId);
@@ -277,18 +235,6 @@ export default function AdminDashboard({ adminKey = '' }) {
             </button>
 
             <button
-              onClick={handleSync}
-              disabled={isSyncing || isDecrypting}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 cursor-pointer ${isLight
-                ? 'bg-[#33312C] border-[#706044] text-[#FAF6ED] hover:bg-[#403C34]'
-                : 'bg-[#151515] border-[#51432A] text-[#F5F2EA] hover:bg-[#202020]'
-                }`}
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#C9A34E]' : ''}`} />
-              <span>{isSyncing ? 'Sincronizando...' : lastSyncText}</span>
-            </button>
-
-            <button
               onClick={exportToCSV}
               disabled={isDecrypting || guests.length === 0}
               className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 cursor-pointer ${isLight
@@ -301,23 +247,6 @@ export default function AdminDashboard({ adminKey = '' }) {
             </button>
           </div>
         </header>
-
-        {needsCloudActivation && (
-          <div className="mb-5 p-3.5 rounded-2xl border border-amber-500/60 bg-amber-950/35 text-amber-200 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span>
-              <strong>Falta activar la nube para recibir confirmaciones desde celulares:</strong> entra en KVdb con{' '}
-              <span className="font-mono underline">contactarstivent@gmail.com</span> y confirma el correo.
-            </span>
-            <a
-              href="https://kvdb.io/login"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-amber-400 text-[#17120A] font-bold text-xs hover:bg-amber-300 transition-colors"
-            >
-              Activar en kvdb.io/login
-            </a>
-          </div>
-        )}
 
         {isDecrypting ? (
           <div className="py-24 text-center flex flex-col items-center gap-3 opacity-80">

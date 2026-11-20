@@ -58,12 +58,8 @@ function InvitationContent({
     if (!guest?.id || isConfirming) return;
     setIsConfirming(true);
 
-    // Dispara guardado local instantáneo + sincronización en segundo plano sin bloquear más de 650 ms
-    const syncPromise = confirmGuest(guest.id);
-    await Promise.all([
-      new Promise((resolve) => setTimeout(resolve, 600)),
-      Promise.race([syncPromise, new Promise((resolve) => setTimeout(resolve, 750))]),
-    ]);
+    confirmGuest(guest.id);
+    await new Promise((resolve) => setTimeout(resolve, 450));
 
     setIsConfirming(false);
     setAttendanceStatus(GUEST_STATUS.CONFIRMED);
@@ -87,11 +83,8 @@ function InvitationContent({
     if (!guest?.id || isDeclining) return;
     setIsDeclining(true);
 
-    const syncPromise = declineGuest(guest.id);
-    await Promise.all([
-      new Promise((resolve) => setTimeout(resolve, 450)),
-      Promise.race([syncPromise, new Promise((resolve) => setTimeout(resolve, 600))]),
-    ]);
+    declineGuest(guest.id);
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     setIsDeclining(false);
     setAttendanceStatus(GUEST_STATUS.DECLINED);
@@ -352,7 +345,6 @@ function InvitationContent({
               disabled={isConfirming}
               onClick={() => {
                 if (attendanceStatus === GUEST_STATUS.CONFIRMED) {
-                  syncSingleGuestFromCloud(guest.id);
                   setIsConfirmDialogOpen(true);
                 } else {
                   handleConfirm();
