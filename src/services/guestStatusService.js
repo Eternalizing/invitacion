@@ -1,5 +1,6 @@
 const STORAGE_KEY = 'nemer_invitaciones_status_v1';
-const SYNC_ENDPOINT = 'https://kvdb.io/8xW4nL9pZ2tM7qYbK3vRc1/nemer50_guest_statuses';
+const KVDB_BUCKET_URL = 'https://kvdb.io/AeusPCiAB7Hc2Li5yFowox';
+const KEY_PREFIX = 'g_';
 export const PRODUCTION_BASE_URL = 'https://invitacion-mauve-nu.vercel.app';
 
 export function getGuestInvitationUrl(guestId) {
@@ -122,7 +123,7 @@ export async function confirmGuest(guestId, note = '') {
   };
 
   saveStoredStatuses(statuses);
-  await pushToCloud(statuses);
+  await pushGuestToCloud(key, statuses[key]);
   return true;
 }
 
@@ -150,7 +151,7 @@ export async function declineGuest(guestId, note = '') {
   };
 
   saveStoredStatuses(statuses);
-  await pushToCloud(statuses);
+  await pushGuestToCloud(key, statuses[key]);
   return true;
 }
 
@@ -164,54 +165,143 @@ export async function setGuestStatus(guestId, newStatus) {
 
   if (newStatus === GUEST_STATUS.PENDING) {
     delete statuses[key];
-  } else {
-    const now = new Date();
-    statuses[key] = {
-      status: newStatus,
-      confirmedAt: now.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      timestamp: now.toISOString(),
-    };
+    saveStoredStatuses(statuses);
+    await deleteGuestFromCloud(key);
+    return true;
   }
 
+  const now = new Date();
+  statuses[key] = {
+    status: newStatus,
+    confirmedAt: now.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    timestamp: now.toISOString(),
+  };
+
   saveStoredStatuses(statuses);
-  await pushToCloud(statuses);
+  await pushGuestToCloud(key, statuses[key]);
   return true;
 }
 
 /**
- * Envía los estados a la nube (KVdb) para persistencia compartida entre dispositivos
+ * Guarda únicamente la clave individual del invitado en KVdb (sin sobrescribir a otros invitados)
  */
-async function pushToCloud(data) {
+async function pushGuestToCloud(guestKey, payload) {
   try {
-    await fetch(SYNC_ENDPOINT, {
+    const res = await fetch(`${KVDB_BUCKET_URL}/${KEY_PREFIX}${encodeURIComponent(guestKey)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
+    return res.ok;
   } catch {
-    // Si falla o no hay conexión, los datos siguen seguros en localStorage
+    return false;
   }
 }
 
 /**
- * Trae los últimos estados desde la nube y los combina con los locales
+ * Elimina la clave individual en KVdb cuando el administrador vuelve a dejarlo en Pendiente
+ */
+async function deleteGuestFromCloud(guestKey) {
+  try {
+    const res = await fetch(`${KVDB_BUCKET_URL}/${KEY_PREFIX}${encodeURIComponent(guestKey)}`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sincroniza el estado de un único invitado desde la nube
+ */
+export async function syncSingleGuestFromCloud(guestId) {
+  if (!guestId) return null;
+  const key = String(guestId).trim().toUpperCase();
+  try {
+    const res = await fetch(`${KVDB_BUCKET_URL}/${KEY_PREFIX}${encodeURIComponent(key)}`, {
+      method: 'GET',
+      cache: 'no-store',
+    });
+    if (res.status === 404) {
+      return null;
+    }
+    if (res.ok) {
+      const text = await res.text();
+      if (!text) return null;
+      const parsed = JSON.parse(text);
+      if (parsed && parsed.status) {
+        const statuses = getStoredStatuses();
+        statuses[key] = parsed;
+        saveStoredStatuses(statuses);
+        return parsed.status;
+      }
+    }
+  } catch {
+    // Continuar en modo local
+  }
+  return null;
+}
+
+/**
+ * Trae los últimos estados individuales desde la nube y los combina por fecha más reciente
  */
 export async function syncWithCloud() {
   try {
-    const response = await fetch(SYNC_ENDPOINT, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-    });
+    const response = await fetch(
+      `${KVDB_BUCKET_URL}/?values=true&format=json&prefix=${encodeURIComponent(KEY_PREFIX)}`,
+      {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      }
+    );
     if (response.ok) {
-      const remoteData = await response.json();
-      if (remoteData && typeof remoteData === 'object') {
+      const entries = await response.json();
+      if (Array.isArray(entries)) {
+        const remoteMap = {};
+        entries.forEach((pair) => {
+          if (!Array.isArray(pair) || pair.length < 2) return;
+          const rawKey = String(pair[0] || '');
+          const guestKey = rawKey.startsWith(KEY_PREFIX)
+            ? rawKey.slice(KEY_PREFIX.length).toUpperCase()
+            : rawKey.toUpperCase();
+          if (!guestKey) return;
+
+          let val = pair[1];
+          if (typeof val === 'string') {
+            try {
+              val = JSON.parse(val);
+            } catch {
+              return;
+            }
+          }
+          if (val && typeof val === 'object' && val.status && val.status !== GUEST_STATUS.PENDING) {
+            remoteMap[guestKey] = val;
+          }
+        });
+
         const localData = getStoredStatuses();
-        const merged = { ...localData, ...remoteData };
+        const merged = { ...localData };
+
+        Object.entries(remoteMap).forEach(([k, remoteVal]) => {
+          const localVal = merged[k];
+          if (!localVal) {
+            merged[k] = remoteVal;
+          } else {
+            const remoteTs = Date.parse(remoteVal.timestamp || '') || 0;
+            const localTs = Date.parse(localVal.timestamp || '') || 0;
+            if (remoteTs >= localTs) {
+              merged[k] = remoteVal;
+            }
+          }
+        });
+
         saveStoredStatuses(merged);
         return { success: true, count: Object.keys(merged).length };
       }
@@ -220,6 +310,14 @@ export async function syncWithCloud() {
     // Si no hay red, continuar con datos locales
   }
   return { success: false, count: 0 };
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY) {
+      notifyListeners();
+    }
+  });
 }
 
 /**

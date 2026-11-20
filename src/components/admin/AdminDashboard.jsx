@@ -73,22 +73,42 @@ export default function AdminDashboard({ adminKey = '' }) {
       setGuests(getAllGuestsWithStatus());
     });
 
+    // Auto-sincronización cada 12s y al enfocar la pestaña para ver confirmaciones desde celulares al instante
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        handleSync(true);
+      }
+    }, 12000);
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        handleSync(true);
+      }
+    };
+
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+
     return () => {
       active = false;
       unsubscribe();
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
       setAdminVaultGuests([]);
     };
   }, [adminKey]);
 
-  const handleSync = async () => {
-    setIsSyncing(true);
+  const handleSync = async (silent = false) => {
+    const isSilent = silent === true;
+    if (!isSilent) setIsSyncing(true);
     const res = await syncWithCloud();
-    setIsSyncing(false);
+    if (!isSilent) setIsSyncing(false);
     if (res.success) {
       setLastSyncText(
         `Sincronizado (${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })})`
       );
-    } else {
+    } else if (!isSilent) {
       setLastSyncText('Modo Local');
     }
   };
