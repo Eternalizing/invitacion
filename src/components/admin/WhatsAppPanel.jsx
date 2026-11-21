@@ -100,7 +100,7 @@ const DEFAULT_GALA_TEMPLATE = `¡Hola, {NOMBRE}! Reciba un cordial saludo.
 
 ✨ Medio siglo de historia, visión y compromiso.
 
-Nos emociona muchísimo invitarle a una noche inolvidable en la que celebraremos los 50 años de Grupo Nemer en nuestra Gala Conmemorativa. 🥂
+Nos emociona muchísimo invitarle a una noche inolvidable en la que celebramos el _50 Aniversario de Grupo Nemer_🥂
 
 Gracias por ser pieza fundamental de este camino lleno de pasión y logros.
 
