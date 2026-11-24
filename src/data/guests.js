@@ -50,10 +50,13 @@ export async function findGuestAsync(searchId) {
     const decoded = decryptJson(envelope, lookupKey);
     if (!decoded || !decoded.n) return null;
 
+    const parsedPasses =
+      decoded.p === 0 || decoded.p === '0' ? 0 : Number(decoded.p) || 1;
+
     return {
       id: clean,
       name: decoded.n,
-      passes: Number(decoded.p) || 1,
+      passes: parsedPasses,
       type: decoded.t || 'navidad',
     };
   } catch {

@@ -631,7 +631,7 @@ export default function WhatsAppPanel({ adminKey = '', onSwitchToAdmin = null })
 
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/5 opacity-80">
                               <Ticket className="w-2.5 h-2.5" />
-                              {guest.passes} {guest.passes === 1 ? 'pase' : 'pases'}
+                              {guest.passes === 0 ? 'Sin pase' : `${guest.passes} ${guest.passes === 1 ? 'pase' : 'pases'}`}
                             </span>
                           </div>
 

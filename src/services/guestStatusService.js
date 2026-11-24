@@ -7,7 +7,7 @@ export function getGuestInvitationUrl(guestId) {
 }
 
 export function getRsvpWhatsAppUrl({ guestId, guestName, passes = 1, isChristmas = false }) {
-  const passCount = Number(passes) || 1;
+  const passCount = passes === 0 || passes === '0' ? 0 : Number(passes) || 1;
   const passLabel = passCount === 1 ? '1 pase' : `${passCount} pases`;
   const cleanName = String(guestName || 'Invitado Especial').trim();
   const cleanId = String(guestId || '').trim();
@@ -19,11 +19,11 @@ export function getRsvpWhatsAppUrl({ guestId, guestName, passes = 1, isChristmas
     eventLine,
     '',
     `Invitado: ${cleanName}`,
-    `Pases: ${passLabel}`,
-    cleanId ? `Código: ${cleanId}` : '',
+    ...(passCount > 0 ? [`Pases: ${passLabel}`] : []),
+    ...(cleanId ? [`Código: ${cleanId}`] : []),
     '',
     '¡Nos vemos el sábado 28 de noviembre!',
-  ].filter((line, idx, arr) => !(line === '' && arr[idx - 1] === ''));
+  ];
 
   const message = lines.join('\n').trim();
   return `https://api.whatsapp.com/send?phone=${RSVP_WHATSAPP_PHONE}&text=${encodeURIComponent(message)}`;
@@ -99,7 +99,7 @@ export function getAllGuestsWithStatus() {
     return {
       id: String(item.id).trim(),
       name: item.name || 'Invitado Especial',
-      passes: Number(item.passes) || 1,
+      passes: item.passes === 0 || item.passes === '0' ? 0 : Number(item.passes) || 1,
       empresa: item.empresa || '',
       cargo: item.cargo || '',
       telefono: item.telefono || '',

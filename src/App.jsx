@@ -279,20 +279,22 @@ function InvitationContent({
             </div>
 
             {/* Badge de Pases */}
-            <div className="flex items-center justify-center my-3">
-              <div
-                className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm transition-all ${
-                  isLight
-                    ? 'bg-[#242320]/80 border-[#DDB967]/50 text-[#FFF0CD]'
-                    : 'bg-[#080808]/80 border-[#C9A34E]/50 text-[#F0DDA7]'
-                }`}
-              >
-                <Ticket className={`w-3.5 h-3.5 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`} />
-                <span className="text-[11px] sm:text-xs tracking-[0.2em] font-bold uppercase font-montserrat">
-                  {Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}
-                </span>
+            {Number(passes) > 0 && (
+              <div className="flex items-center justify-center my-3">
+                <div
+                  className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm transition-all ${
+                    isLight
+                      ? 'bg-[#242320]/80 border-[#DDB967]/50 text-[#FFF0CD]'
+                      : 'bg-[#080808]/80 border-[#C9A34E]/50 text-[#F0DDA7]'
+                  }`}
+                >
+                  <Ticket className={`w-3.5 h-3.5 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`} />
+                  <span className="text-[11px] sm:text-xs tracking-[0.2em] font-bold uppercase font-montserrat">
+                    {Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Línea divisoria dorada */}
             <div
@@ -383,7 +385,7 @@ function InvitationContent({
                 <span>
                   {attendanceStatus === GUEST_STATUS.CONFIRMED
                     ? '✓ ASISTENCIA CONFIRMADA'
-                    : Number(passes) === 1
+                    : Number(passes) <= 1
                     ? 'CONFIRMAR ASISTENCIA'
                     : `CONFIRMAR ASISTENCIA (${passes} PASES)`}
                 </span>
@@ -557,7 +559,7 @@ function InvitationContent({
                   ¡Muchas gracias, <strong className="text-gold-shine font-guest font-semibold text-base">{guestName}</strong>!
                 </p>
                 <p className="text-xs opacity-75 text-center mb-4">
-                  Su asistencia ({Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}) ha sido registrada en la lista oficial
+                  Su asistencia{Number(passes) > 0 ? ` (${Number(passes) === 1 ? '1 PASE' : `${passes} PASES`})` : ''} ha sido registrada en la lista oficial
                   {isChristmas ? ' de los 50 años y Cena Navideña.' : ' de la gala.'}
                 </p>
                 <a
@@ -617,18 +619,20 @@ function InvitationContent({
 
             {attendanceStatus === GUEST_STATUS.PENDING && (
               <>
-                <div
-                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold mb-4 border ${
-                    isLight
-                      ? 'bg-[#242320]/60 border-[#706044]/60 text-[#DDB967]'
-                      : 'bg-[#080808]/60 border-[#51432A]/60 text-[#C9A34E]'
-                  }`}
-                >
-                  <Ticket className="w-3.5 h-3.5" />
-                  <span className="font-bold tracking-wider">
-                    {Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}
-                  </span>
-                </div>
+                {Number(passes) > 0 && (
+                  <div
+                    className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold mb-4 border ${
+                      isLight
+                        ? 'bg-[#242320]/60 border-[#706044]/60 text-[#DDB967]'
+                        : 'bg-[#080808]/60 border-[#51432A]/60 text-[#C9A34E]'
+                    }`}
+                  >
+                    <Ticket className="w-3.5 h-3.5" />
+                    <span className="font-bold tracking-wider">
+                      {Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}
+                    </span>
+                  </div>
+                )}
 
                 <button
                   type="button"
@@ -650,7 +654,7 @@ function InvitationContent({
                     </>
                   ) : (
                     <span>
-                      {Number(passes) === 1
+                      {Number(passes) <= 1
                         ? 'CONFIRMAR MI ASISTENCIA'
                         : `CONFIRMAR ASISTENCIA (${passes} PASES)`}
                     </span>

@@ -46,7 +46,9 @@ export default function ConfirmationDialog({
     '&dates=20261128T213000Z/20261129T040000Z' +
     '&details=' +
     encodeURIComponent(
-      `Invitación confirmada para ${guestName} (${Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}). ${
+      `Invitación confirmada para ${guestName}${
+        Number(passes) > 0 ? ` (${Number(passes) === 1 ? '1 PASE' : `${passes} PASES`})` : ''
+      }. ${
         isChristmas ? 'Celebración 50 Años y Tradicional Cena Navideña (9:00 p. m.).' : 'Gala Conmemorativa 50 Años.'
       }`
     ) +
@@ -120,12 +122,14 @@ export default function ConfirmationDialog({
               : 'bg-[#080808]/70 border-[#51432A]/60'
           }`}
         >
-          <div className="flex items-center gap-2.5">
-            <Ticket className={`w-4 h-4 shrink-0 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`} />
-            <span className="font-bold tracking-wider uppercase">
-              {Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}
-            </span>
-          </div>
+          {Number(passes) > 0 && (
+            <div className="flex items-center gap-2.5">
+              <Ticket className={`w-4 h-4 shrink-0 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`} />
+              <span className="font-bold tracking-wider uppercase">
+                {Number(passes) === 1 ? '1 PASE' : `${passes} PASES`}
+              </span>
+            </div>
+          )}
 
           <div className="flex items-center gap-2.5 opacity-90">
             <Calendar className={`w-4 h-4 shrink-0 ${isLight ? 'text-[#DDB967]' : 'text-[#C9A34E]'}`} />

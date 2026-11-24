@@ -140,7 +140,7 @@ export default function AdminDashboard({ adminKey = '' }) {
     const confirmed = guests.filter((g) => g.status === GUEST_STATUS.CONFIRMED);
     const pending = guests.filter((g) => g.status === GUEST_STATUS.PENDING);
     const declined = guests.filter((g) => g.status === GUEST_STATUS.DECLINED);
-    const confirmedPasses = confirmed.reduce((acc, curr) => acc + (Number(curr.passes) || 1), 0);
+    const confirmedPasses = confirmed.reduce((acc, curr) => acc + (Number(curr.passes ?? 1)), 0);
 
     return {
       total,
@@ -644,7 +644,7 @@ export default function AdminDashboard({ adminKey = '' }) {
                             )}
                           </div>
                           <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-white/10 font-mono">
-                            {guest.passes} {guest.passes > 1 ? 'pases' : 'pase'}
+                            {guest.passes === 0 ? 'Sin pase' : `${guest.passes} ${guest.passes > 1 ? 'pases' : 'pase'}`}
                           </span>
                         </div>
 
